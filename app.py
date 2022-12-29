@@ -22,9 +22,6 @@ def init():
         _, buffer = cv2.imencode(".jpg", img)
         frame = buffer.tobytes()
         yield (b"--frame\r\n" b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n")
-        # key = cv2.waitKey(1)
-        # if key == ord('r'):
-        #     game.gameOver = False
 
 
 @app.route("/video_feed")
