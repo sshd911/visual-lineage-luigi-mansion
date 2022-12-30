@@ -1,11 +1,9 @@
-# from cvzone.HandTrackingModule import HandDetector
 import mediapipe as np
 import numpy as np
 import cvzone
 import cv2
 import random
 import math
-
 
 class Main:
     def __init__(self, pathFood):
@@ -24,19 +22,10 @@ class Main:
     def randomFoodLocation(self):
         self.foodPoint = random.randint(100, 1000), random.randint(100, 600)
 
-    def update(self, imgMain, currentHead):
+    def update(self, imgMain, currentHead, dh, dw):
         if self.gameOver:
-            cvzone.putTextRect(
-                imgMain, "Game Over", [300, 400], scale=7, thickness=5, offset=20
-            )
-            cvzone.putTextRect(
-                imgMain,
-                f"Your Score: {self.score}",
-                [300, 550],
-                scale=7,
-                thickness=5,
-                offset=20,
-            )
+            cvzone.putTextRect(imgMain, "Game Over", [int(dh/2), int(dw/4)], scale=7, thickness=5, offset=20, colorR=(0,0,0), colorT=(0,0,255))
+            cvzone.putTextRect(imgMain, f"Your Score: {self.score}", [int(dh/3), int(dw/3)], scale=7, thickness=5, offset=20, colorR=(0,0,0), colorT=(0,0,255))
         else:
             px, py = self.previousHead
             cx, cy = currentHead
@@ -65,8 +54,6 @@ class Main:
                 self.randomFoodLocation()
                 self.allowedLength += 50
                 self.score += 1
-                print(self.score)
-
             # Draw Snake
             if self.points:
                 for i, point in enumerate(self.points):
@@ -88,6 +75,8 @@ class Main:
                 scale=3,
                 thickness=3,
                 offset=10,
+                colorR=(0,0,0),
+                colorT=(0,0,255)
             )
 
             # Check for Collision
