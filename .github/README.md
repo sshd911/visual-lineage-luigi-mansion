@@ -2,7 +2,5 @@
 
 ```bash
 # worked on python >= 3.9 
-
 $ pip install mediapipe-silicon
-
 ```

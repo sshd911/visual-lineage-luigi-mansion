@@ -4,7 +4,7 @@ push:
 	git push origin HEAD
 run:
 	open http://localhost:8080
-	python -B src/app.py
+	python src/app.py
 env:
 	pipreqs --force 
 format: 
