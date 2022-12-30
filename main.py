@@ -5,6 +5,7 @@ import cv2
 import random
 import math
 
+
 class Main:
     def __init__(self, pathFood):
         self.points = []  # all points of the snake
@@ -24,8 +25,26 @@ class Main:
 
     def update(self, imgMain, currentHead, dh, dw):
         if self.gameOver:
-            cvzone.putTextRect(imgMain, "Game Over", [int(dh/2), int(dw/4)], scale=7, thickness=5, offset=20, colorR=(0,0,0), colorT=(0,0,255))
-            cvzone.putTextRect(imgMain, f"Your Score: {self.score}", [int(dh/3), int(dw/3)], scale=7, thickness=5, offset=20, colorR=(0,0,0), colorT=(0,0,255))
+            cvzone.putTextRect(
+                imgMain,
+                "Game Over",
+                [int(dh / 2), int(dw / 4)],
+                scale=7,
+                thickness=5,
+                offset=20,
+                colorR=(0, 0, 0),
+                colorT=(0, 0, 255),
+            )
+            cvzone.putTextRect(
+                imgMain,
+                f"Your Score: {self.score}",
+                [int(dh / 3), int(dw / 3)],
+                scale=7,
+                thickness=5,
+                offset=20,
+                colorR=(0, 0, 0),
+                colorT=(0, 0, 255),
+            )
         else:
             px, py = self.previousHead
             cx, cy = currentHead
@@ -75,8 +94,8 @@ class Main:
                 scale=3,
                 thickness=3,
                 offset=10,
-                colorR=(0,0,0),
-                colorT=(0,0,255)
+                colorR=(0, 0, 0),
+                colorT=(0, 0, 255),
             )
 
             # Check for Collision

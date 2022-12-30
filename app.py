@@ -1,9 +1,8 @@
 from flask import Flask, render_template, Response
 from cvzone.HandTrackingModule import HandDetector
 from main import Main
-import cv2
 import numpy as np
-import pyautogui as pag
+import cv2
 
 app = Flask(__name__)
 cap = cv2.VideoCapture(0)
@@ -11,6 +10,8 @@ detector = HandDetector(detectionCon=0.8, maxHands=1)
 game = Main("fly.png")
 dw = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 dh = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+
 def init():
     while True:
         _, img = cap.read()
