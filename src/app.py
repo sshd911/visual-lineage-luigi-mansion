@@ -6,7 +6,7 @@ import cv2
 import os
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
-game = Main(f"{base_dir}/static/fly.png")
+game = Main(f"{base_dir}/static/food.png")
 app = Flask(__name__)
 cap = cv2.VideoCapture(0)
 detector = HandDetector(detectionCon=0.8, maxHands=1)
