@@ -3,12 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="icon" href="./../static/icon.svg" alt="" />
   <title>Program lang 4</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script defer src="https://unpkg.com/alpinejs@3.10.5/dist/cdn.min.js"></script>
 </head>
 <body class="min-w-screen min-h-screen overflow-hidden" x-data="{isClicked: true, get confirmPrompt() {document.querySelector('img').requestFullscreen()}}">
-  <img x-show="isClicked" src="{{ url_for('video_feed') }}" width="100%" height="100%">
+  <img x-show="isClicked" src="{{ url_for('video_feed') }}" width="100%" height="100%" alt="" />
   <div x-show="!isClicked" class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
     <div x-show="!isClicked" class="fixed inset-0 z-10 overflow-y-auto">
