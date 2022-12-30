@@ -4,7 +4,6 @@ import cv2
 import random
 import math
 
-
 class Main:
     def __init__(self, pathFood):
         self.points = []  # all points of the snake

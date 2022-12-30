@@ -4,6 +4,7 @@ from main import Main
 import numpy as np
 import cv2
 import os
+from memory_profiler import *
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 game = Main(f"{base_dir}/static/food.png")
@@ -13,7 +14,7 @@ detector = HandDetector(detectionCon=0.8, maxHands=1)
 dw = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 dh = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-
+@profile
 def init():
     while True:
         _, img = cap.read()
@@ -40,4 +41,4 @@ def index():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8080)
+    app.run(debug=True, port=80)
