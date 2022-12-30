@@ -1,4 +1,5 @@
-from cvzone.HandTrackingModule import HandDetector
+# from cvzone.HandTrackingModule import HandDetector
+import mediapipe as np
 import numpy as np
 import cvzone
 import cv2
