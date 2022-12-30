@@ -3,11 +3,13 @@ from cvzone.HandTrackingModule import HandDetector
 from main import Main
 import numpy as np
 import cv2
+import os
 
+base_dir = os.path.dirname(os.path.abspath(__file__))
+game = Main(f"{base_dir}/static/fly.png")
 app = Flask(__name__)
 cap = cv2.VideoCapture(0)
 detector = HandDetector(detectionCon=0.8, maxHands=1)
-game = Main("fly.png")
 dw = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 dh = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
@@ -15,7 +17,6 @@ dh = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 def init():
     while True:
         _, img = cap.read()
-        print(img.shape)
         bg = np.zeros((dh, dw, 3), np.uint8)
         img = cv2.flip(img, 1)
         hands, img = detector.findHands(img, flipType=False)

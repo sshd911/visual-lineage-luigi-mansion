@@ -4,10 +4,12 @@ push:
 	git push origin HEAD
 run:
 	open http://localhost:8080
-	python app.py
+	python -B src/app.py
 env:
 	pipreqs --force 
 format: 
 	black .
+check:
+	flake8
 install:
 	pip install -r requirements.txt
