@@ -24,10 +24,13 @@ class Game:
     def randomFoodLocation(self):
         self.foodPoint = random.randint(100, 1000), random.randint(100, 600)
 
-    def update(self, imgMain, currentHead, dh, dw):
+    def update(self, imgMain, currentHead, dh, dw, cap):
         if self.gameOver:
             cvzone.putTextRect(imgMain, "Game Over", [int(dh / 2), int(dw / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
             cvzone.putTextRect(imgMain, f"Your Score: {self.score}", [int(dh / 3), int(dw / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
+            cap.release()
+            cv2.destroyAllWindows()
+            return imgMain
         else:
             px, py = self.previousHead
             cx, cy = currentHead
@@ -85,4 +88,4 @@ class Game:
                 self.previousHead = 0, 0  # previous head point
                 self.randomFoodLocation()
 
-        return imgMain
+            return imgMain

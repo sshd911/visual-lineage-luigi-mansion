@@ -13,15 +13,20 @@ def init():
     dh = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     detector = HandDetector(detectionCon=0.8, maxHands=1)
     while True:
-        _, img = cap.read()
+        success, img = cap.read()
         # bg = np.zeros((dh, dw, 3), np.uint8)
-        img = cv2.flip(img, 1)
-        hands, img = detector.findHands(img, flipType=False)
-        if hands:
-            lmList = hands[0]["lmList"]
-            pointIndex = lmList[8][0:2]
-            img = game.update(img, pointIndex, dh, dw)
+        if not success:
+            break
+        else:
+            img = cv2.flip(img, 1)
+            hands, img = detector.findHands(img, flipType=False)
+            if hands:
+                lmList = hands[0]["lmList"]
+                pointIndex = lmList[8][0:2]
+                img = game.update(img, pointIndex, dh, dw, cap)
+                # bg = game.update(img, pointIndex, dh, dw, cap)
         _, buffer = cv2.imencode(".jpg", img)
+        # _, buffer = cv2.imencode(".jpg", bg)
         yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + buffer.tobytes() + b"\r\n")
 
 
