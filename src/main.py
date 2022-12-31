@@ -14,14 +14,8 @@ class Main:
         self.currentLength = 0  # total length of the snake
         self.allowedLength = 150  # total allowed Length
         self.previousHead = 0, 0  # previous headig -t NS d point
-        self.imgFood = cv2.imread(
-            self.basePath + "/static/food.png",
-            cv2.IMREAD_UNCHANGED,
-        )
-        self.imgPredator = cv2.imread(
-            self.basePath + "/static/predator.png",
-            cv2.IMREAD_UNCHANGED,
-        )
+        self.imgFood = cv2.imread(self.basePath + "/static/food.png", cv2.IMREAD_UNCHANGED)
+        self.imgPredator = cv2.imread(self.basePath + "/static/predator.png", cv2.IMREAD_UNCHANGED)
         self.hPredator, self.wPredator, _ = self.imgPredator.shape
         self.hFood, self.wFood, _ = self.imgFood.shape
         self.foodPoint = 0, 0
@@ -34,30 +28,11 @@ class Main:
 
     def update(self, imgMain, currentHead, dh, dw):
         if self.gameOver:
-            cvzone.putTextRect(
-                imgMain,
-                "Game Over",
-                [int(dh / 2), int(dw / 4)],
-                scale=7,
-                thickness=5,
-                offset=20,
-                colorR=(0, 0, 0),
-                colorT=(0, 0, 255),
-            )
-            cvzone.putTextRect(
-                imgMain,
-                f"Your Score: {self.score}",
-                [int(dh / 3), int(dw / 3)],
-                scale=7,
-                thickness=5,
-                offset=20,
-                colorR=(0, 0, 0),
-                colorT=(0, 0, 255),
-            )
+            cvzone.putTextRect(imgMain, "Game Over", [int(dh / 2), int(dw / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
+            cvzone.putTextRect(imgMain, f"Your Score: {self.score}", [int(dh / 3), int(dw / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
         else:
             px, py = self.previousHead
             cx, cy = currentHead
-
             self.points.append([cx, cy])
             distance = math.hypot(cx - px, cy - py)
             self.lengths.append(distance)
@@ -94,16 +69,7 @@ class Main:
             # Draw Food
             imgMain = cvzone.overlayPNG(imgMain, self.imgFood, (rx - self.wFood // 2, ry - self.hFood // 2))
 
-            cvzone.putTextRect(
-                imgMain,
-                f"Score: {self.score}",
-                [50, 80],
-                scale=3,
-                thickness=3,
-                offset=10,
-                colorR=(0, 0, 0),
-                colorT=(0, 0, 255),
-            )
+            cvzone.putTextRect(imgMain, f"Score: {self.score}", [50, 80], scale=3, thickness=3, offset=10, colorR=(0, 0, 0), colorT=(0, 0, 255))
 
             # Check for Collision
             pts = np.array(self.points[:-2], np.int32)
@@ -112,7 +78,7 @@ class Main:
             minDist = cv2.pointPolygonTest(pts, (cx, cy), True)
 
             if -1 <= minDist <= 1:
-                print("Hit")
+                # print("Hit")
                 self.gameOver = True
                 self.points = []  # all points of the snake
                 self.lengths = []  # distance between each point
