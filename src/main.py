@@ -8,17 +8,18 @@ import os
 
 class Main:
     def __init__(self):
+        self.basePath = os.path.dirname(os.path.abspath(__file__))
         self.points = []  # all points of the snake
         self.lengths = []  # distance between each point
         self.currentLength = 0  # total length of the snake
         self.allowedLength = 150  # total allowed Length
         self.previousHead = 0, 0  # previous headig -t NS d point
         self.imgFood = cv2.imread(
-            os.path.dirname(os.path.abspath(__file__)) + "/static/food.png",
+            self.basePath + "/static/food.png",
             cv2.IMREAD_UNCHANGED,
         )
         self.imgPredator = cv2.imread(
-            os.path.dirname(os.path.abspath(__file__)) + "/static/predator.png",
+            self.basePath + "/static/predator.png",
             cv2.IMREAD_UNCHANGED,
         )
         self.hPredator, self.wPredator, _ = self.imgPredator.shape
@@ -88,9 +89,12 @@ class Main:
                         cv2.line(
                             imgMain, self.points[i - 1], self.points[i], (0, 0, 255), 20
                         )
-                imgMain = cvzone.overlayPNG(imgMain, self.imgPredator, self.points[-1])
-                # cv2.imshow(self.imgPredator, self.points[-1])
-                # cv2.circle(imgMain, self.points[-1], 20, (0, 255, 0), cv2.FILLED)
+                distance = math.sqrt((self.points[i-1][0] - self.points[i][0]) ** 2 + (self.points[i-1][1] - self.points[i][1]) ** 2)
+                if(distance > 0):
+                    unit_vector = ((self.points[i-1][0] - self.points[i][0]) / distance, (self.points[i-1][1] - self.points[i][1]) / distance)
+                    start_angle = math.atan2(unit_vector[1], unit_vector[0]) * 180 / math.pi
+                    end_angle = start_angle + math.pi * 2 * (5/6) * 180 / math.pi
+                    cv2.ellipse(imgMain, self.points[i], (30, 30), 180, start_angle, end_angle, (0, 255, 255), thickness=-1)
 
             # Draw Food
             imgMain = cvzone.overlayPNG(
