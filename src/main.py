@@ -3,15 +3,25 @@ import cvzone
 import cv2
 import random
 import math
+import os
+
 
 class Main:
-    def __init__(self, pathFood):
+    def __init__(self):
         self.points = []  # all points of the snake
         self.lengths = []  # distance between each point
         self.currentLength = 0  # total length of the snake
         self.allowedLength = 150  # total allowed Length
         self.previousHead = 0, 0  # previous headig -t NS d point
-        self.imgFood = cv2.imread(pathFood, cv2.IMREAD_UNCHANGED)
+        self.imgFood = cv2.imread(
+            os.path.dirname(os.path.abspath(__file__)) + "/static/food.png",
+            cv2.IMREAD_UNCHANGED,
+        )
+        self.imgPredator = cv2.imread(
+            os.path.dirname(os.path.abspath(__file__)) + "/static/predator.png",
+            cv2.IMREAD_UNCHANGED,
+        )
+        self.hPredator, self.wPredator, _ = self.imgPredator.shape
         self.hFood, self.wFood, _ = self.imgFood.shape
         self.foodPoint = 0, 0
         self.randomFoodLocation()
@@ -78,7 +88,9 @@ class Main:
                         cv2.line(
                             imgMain, self.points[i - 1], self.points[i], (0, 0, 255), 20
                         )
-                cv2.circle(imgMain, self.points[-1], 20, (0, 255, 0), cv2.FILLED)
+                imgMain = cvzone.overlayPNG(imgMain, self.imgPredator, self.points[-1])
+                # cv2.imshow(self.imgPredator, self.points[-1])
+                # cv2.circle(imgMain, self.points[-1], 20, (0, 255, 0), cv2.FILLED)
 
             # Draw Food
             imgMain = cvzone.overlayPNG(
