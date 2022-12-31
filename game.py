@@ -3,19 +3,17 @@ import cvzone
 import cv2
 import random
 import math
-import os
 
 
 class Game:
     def __init__(self):
-        self.basePath = os.path.dirname(os.path.abspath(__file__))
         self.points = []  # all points of the snake
         self.lengths = []  # distance between each point
         self.currentLength = 0  # total length of the snake
         self.allowedLength = 150  # total allowed Length
         self.previousHead = 0, 0  # previous headig -t NS d point
-        self.imgFood = cv2.imread(self.basePath + "/static/food.png", cv2.IMREAD_UNCHANGED)
-        self.imgPredator = cv2.imread(self.basePath + "/static/predator.png", cv2.IMREAD_UNCHANGED)
+        self.imgFood = cv2.imread("./static/food.png", cv2.IMREAD_UNCHANGED)
+        self.imgPredator = cv2.imread("./static/predator.png", cv2.IMREAD_UNCHANGED)
         self.hPredator, self.wPredator, _ = self.imgPredator.shape
         self.hFood, self.wFood, _ = self.imgFood.shape
         self.foodPoint = 0, 0

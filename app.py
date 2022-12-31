@@ -1,8 +1,6 @@
 from flask import Flask, render_template, Response
 from cvzone.HandTrackingModule import HandDetector
-from src.game import Game
-
-# from main import Main
+from game import Game
 import numpy as np
 import cv2
 

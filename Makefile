@@ -4,7 +4,7 @@ push:
 	git push origin HEAD
 run:
 	open -na "Google Chrome" http://127.0.0.1:80
-	python src/app.py
+	python app.py
 env:
 	pipreqs --force 
 format: 
