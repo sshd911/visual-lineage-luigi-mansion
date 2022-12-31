@@ -3,7 +3,7 @@ push:
 	git commit -m 'fix'
 	git push origin HEAD
 run:
-	open http://localhost:80
+	open -na "Google Chrome" http://localhost:80
 	python src/app.py
 env:
 	pipreqs --force 
