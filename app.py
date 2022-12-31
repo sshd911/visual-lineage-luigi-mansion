@@ -8,6 +8,7 @@ app = Flask(__name__)
 
 
 def init():
+    game = Game()
     cap = cv2.VideoCapture(0)
     dw = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     dh = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -41,5 +42,4 @@ def index():
 
 
 if __name__ == "__main__":
-    game = Game()
     app.run(debug=False, host="0.0.0.0", port=80)
