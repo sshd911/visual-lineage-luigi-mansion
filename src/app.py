@@ -24,10 +24,7 @@ def init():
             pointIndex = lmList[8][0:2]
             img = game.update(img, pointIndex, dh, dw)
         _, buffer = cv2.imencode(".jpg", img)
-        yield (
-            b"--frame\r\n"
-            b"Content-Type: image/jpeg\r\n\r\n" + buffer.tobytes() + b"\r\n"
-        )
+        yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + buffer.tobytes() + b"\r\n")
 
 
 @app.route("/video_feed")

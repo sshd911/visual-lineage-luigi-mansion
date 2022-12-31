@@ -8,7 +8,7 @@ run:
 env:
 	pipreqs --force 
 format: 
-	black .
+	black . --line-length=1000
 check:
 	flake8
 install:

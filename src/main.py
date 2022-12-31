@@ -75,31 +75,24 @@ class Main:
 
             # Check if snake ate the Food
             rx, ry = self.foodPoint
-            if (
-                rx - self.wFood // 2 < cx < rx + self.wFood // 2
-                and ry - self.hFood // 2 < cy < ry + self.hFood // 2
-            ):
+            if rx - self.wFood // 2 < cx < rx + self.wFood // 2 and ry - self.hFood // 2 < cy < ry + self.hFood // 2:
                 self.randomFoodLocation()
                 self.allowedLength += 50
                 self.score += 1
-            # Draw Snake
+            # Draw Packman
             if self.points:
                 for i, point in enumerate(self.points):
                     if i != 0:
-                        cv2.line(
-                            imgMain, self.points[i - 1], self.points[i], (0, 0, 255), 20
-                        )
-                distance = math.sqrt((self.points[i-1][0] - self.points[i][0]) ** 2 + (self.points[i-1][1] - self.points[i][1]) ** 2)
-                if(distance > 0):
-                    unit_vector = ((self.points[i-1][0] - self.points[i][0]) / distance, (self.points[i-1][1] - self.points[i][1]) / distance)
+                        cv2.line(imgMain, self.points[i - 1], self.points[i], (0, 0, 255), 20)
+                distance = math.sqrt((self.points[i - 1][0] - self.points[i][0]) ** 2 + (self.points[i - 1][1] - self.points[i][1]) ** 2)
+                if distance > 0:
+                    unit_vector = ((self.points[i - 1][0] - self.points[i][0]) / distance, (self.points[i - 1][1] - self.points[i][1]) / distance)
                     start_angle = math.atan2(unit_vector[1], unit_vector[0]) * 180 / math.pi
-                    end_angle = start_angle + math.pi * 2 * (5/6) * 180 / math.pi
+                    end_angle = start_angle + math.pi * 2 * (5 / 6) * 180 / math.pi
                     cv2.ellipse(imgMain, self.points[i], (30, 30), 180, start_angle, end_angle, (0, 255, 255), thickness=-1)
 
             # Draw Food
-            imgMain = cvzone.overlayPNG(
-                imgMain, self.imgFood, (rx - self.wFood // 2, ry - self.hFood // 2)
-            )
+            imgMain = cvzone.overlayPNG(imgMain, self.imgFood, (rx - self.wFood // 2, ry - self.hFood // 2))
 
             cvzone.putTextRect(
                 imgMain,
