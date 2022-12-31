@@ -1,6 +1,6 @@
 from flask import Flask, render_template, Response
 from cvzone.HandTrackingModule import HandDetector
-from main import Main
+from game import Game
 
 # from main import Main
 import numpy as np
@@ -38,5 +38,5 @@ def index():
 
 
 if __name__ == "__main__":
-    game = Main()
+    game = Game()
     app.run(port=80)

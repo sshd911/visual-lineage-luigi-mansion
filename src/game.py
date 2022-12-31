@@ -6,7 +6,7 @@ import math
 import os
 
 
-class Main:
+class Game:
     def __init__(self):
         self.basePath = os.path.dirname(os.path.abspath(__file__))
         self.points = []  # all points of the snake
