@@ -3,24 +3,28 @@ import cvzone
 import cv2
 import random
 import math
-
-
+import pygame
 class Game:
+
     def __init__(self):
         self.points = []  # all points of the snake
         self.lengths = []  # distance between each point
         self.currentLength = 0  # total length of the snake
         self.allowedLength = 150  # total allowed Length
         self.previousHead = 0, 0  # previous headig -t NS d point
-        self.imgFood = cv2.imread("./static/food.png", cv2.IMREAD_UNCHANGED)
-        self.imgPredator = cv2.imread("./static/predator.png", cv2.IMREAD_UNCHANGED)
+        self.imgFood = cv2.imread("./static/images/food.png", cv2.IMREAD_UNCHANGED)
+        self.imgPredator = cv2.imread("./static//images/predator.png", cv2.IMREAD_UNCHANGED)
         self.hPredator, self.wPredator, _ = self.imgPredator.shape
         self.hFood, self.wFood, _ = self.imgFood.shape
         self.foodPoint = 0, 0
         self.randomFoodLocation()
         self.score = 0
         self.gameOver = False
-
+        # pygame.mixer.init()
+        # pygame.mixer.music.set_volume(0.5)
+        # pygame.mixer.music.load("./static/audios/main.mp3")
+        # pygame.mixer.music.play()
+        # pygame.mixer.music.pause()
     def randomFoodLocation(self):
         self.foodPoint = random.randint(100, 1000), random.randint(100, 600)
 
@@ -41,13 +45,13 @@ class Game:
             self.previousHead = cx, cy
 
             # Length Reduction
-            if self.currentLength > self.allowedLength:
-                for i, length in enumerate(self.lengths):
-                    self.currentLength -= length
-                    self.lengths.pop(i)
-                    self.points.pop(i)
-                    if self.currentLength < self.allowedLength:
-                        break
+            # if self.currentLength > self.allowedLength:
+            #     for i, length in enumerate(self.lengths):
+            #         self.currentLength -= length
+            #         self.lengths.pop(i)
+            #         self.points.pop(i)
+            #         if self.currentLength < self.allowedLength:
+            #             break
 
             # Check if snake ate the Food
             rx, ry = self.foodPoint
@@ -59,7 +63,7 @@ class Game:
             if self.points:
                 for i, point in enumerate(self.points):
                     if i != 0:
-                        cv2.line(imgMain, self.points[i - 1], self.points[i], (0, 0, 255), 20)
+                        cv2.line(imgMain, self.points[i - 1], self.points[i], (0, 0, 0), 20)
                 distance = math.sqrt((self.points[i - 1][0] - self.points[i][0]) ** 2 + (self.points[i - 1][1] - self.points[i][1]) ** 2)
                 if distance > 0:
                     unit_vector = ((self.points[i - 1][0] - self.points[i][0]) / distance, (self.points[i - 1][1] - self.points[i][1]) / distance)
@@ -69,14 +73,14 @@ class Game:
 
             # Draw Food
             imgMain = cvzone.overlayPNG(imgMain, self.imgFood, (rx - self.wFood // 2, ry - self.hFood // 2))
-
             cvzone.putTextRect(imgMain, f"Score: {self.score}", [50, 80], scale=3, thickness=3, offset=10, colorR=(0, 0, 0), colorT=(0, 0, 255))
 
             # Check for Collision
             pts = np.array(self.points[:-2], np.int32)
             pts = pts.reshape((-1, 1, 2))
-            cv2.polylines(imgMain, [pts], False, (0, 255, 0), 3)
+            cv2.polylines(imgMain, [pts], False, (0, 0, 0), 3)
             minDist = cv2.pointPolygonTest(pts, (cx, cy), True)
+            print(minDist)
 
             if -1 <= minDist <= 1:
                 # print("Hit")
