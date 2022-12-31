@@ -7,10 +7,12 @@ import cv2
 
 app = Flask(__name__)
 
+
 def init():
     cap = cv2.VideoCapture(0)
+    dw = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    dh = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     detector = HandDetector(detectionCon=0.8, maxHands=1)
-    dw, dh = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     while True:
         _, img = cap.read()
         # bg = np.zeros((dh, dw, 3), np.uint8)
