@@ -6,7 +6,9 @@ import cv2
 import random
 import math
 
-SUCCESS_SCORE = 3
+
+SUCCESS_SCORE = 5
+INTRO_AUDIO = "./static/audios/intro.mp3"
 STAGE_AUDIO = "./static/audios/stage.mp3"
 FAILED_AUDIO = "./static/audios/failed.mp3"
 SUCCESS_AUDIO = "./static/audios/success.mp3"
@@ -19,6 +21,14 @@ BLUE_IMG = "./static/images/blue.png"
 
 class IndexController:
     def __init__(self):
+        # Load Audios
+        pygame.mixer.init()
+        pygame.mixer.music.set_volume(0.1)
+        pygame.mixer.Sound(INTRO_AUDIO).play()
+        self.stage_audio = pygame.mixer.music.load(STAGE_AUDIO)
+        self.failed_audio = pygame.mixer.Sound(FAILED_AUDIO)
+        self.success_audio = pygame.mixer.Sound(SUCCESS_AUDIO)
+        self.eat_effect = pygame.mixer.Sound(EAT_EFFECT)
         # Load Images
         self.food_img = cv2.imread(FOOD_IMG, cv2.IMREAD_UNCHANGED)
         self.food_height, self.food_width, _ = self.food_img.shape
@@ -32,13 +42,6 @@ class IndexController:
         self.blue_img = cv2.imread(BLUE_IMG, cv2.IMREAD_UNCHANGED)
         self.blue_height, self.wBlue, _ = self.blue_img.shape
         self.blue_point = random.randint(100, 1000), random.randint(100, 600)
-        # Load Audios
-        pygame.mixer.init()
-        pygame.mixer.music.set_volume(0.5)
-        self.stage_audio = pygame.mixer.music.load(STAGE_AUDIO)
-        self.failed_audio = pygame.mixer.Sound(FAILED_AUDIO)
-        self.success_audio = pygame.mixer.Sound(SUCCESS_AUDIO)
-        self.eat_effect = pygame.mixer.Sound(EAT_EFFECT)
         # Settings
         self.points = []  # all points of the pacman
         self.current_point = 0, 0  # current headig point
