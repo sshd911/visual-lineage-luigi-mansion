@@ -1,13 +1,32 @@
 <h1 align="center">Visual Lineage - Pacman</h1>
-<hr>
-<ul>
-  <li>MediaPipe <a href="https://google.github.io/mediapipe/getting_started/install.html">Installation</a></li>
-  <li>Apple Silicon <a href="https://github.com/google/mediapipe/issues/1325#issuecomment-757505422">note that pip install will currently not work with versions >= 3.9</a>
-  </li>
-  <br> 
-  
+This is the easily game of pacman with computer vision using hand trackig.
+But I don't know as well about pacman, sorry...
+
+## Usage
 ```bash
-# worked on python >= 3.9 
-$ pip install mediapipe-silicon
+$ git clone https://github.com/sshd911/visual-lineage-pacman && cd visual-lineage-pacman
+
+# Desctop
+$ cd _desctop
+$ make install
+$ make run
+
+# Web
+$ make install
+$ make run
 ```
-</ul>
+
+## Requirement
+- cvzone >= 1.5.0
+- Flask >= 2.2.0
+- numpy >= 1.2.0
+- pygame >= 2.0.0
+- opencv-python >= 4.7.0
+- opencv_contrib_python >= 4.7.0
+- mediapipe
+###### MacOS Apple Silicon
+- python >= 3.9.0
+- mediapipe-silicon >= 0.8.0
+###### MacOS Intel Tip
+###### Windows
+###### Linux
