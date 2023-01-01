@@ -26,7 +26,7 @@ watch:
 
 # installation
 install:
+	npm install && npm run build
 	pip install -r requirements.txt
 	FLASK_APP=app.py
 	FLASK_DEBUG=1 
-	npm install && npm run build
