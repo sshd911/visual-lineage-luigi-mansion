@@ -6,14 +6,16 @@ import cv2
 import random
 import math
 
+SUCCESS_SCORE = 3
 STAGE_AUDIO = "./static/audios/stage.mp3"
 FAILED_AUDIO = "./static/audios/failed.mp3"
 SUCCESS_AUDIO = "./static/audios/success.mp3"
+EAT_EFFECT = "./static/audios/eat.mp3"
 FOOD_IMG = "./static/images/cherry.png"
 RED_IMG = "./static/images/red.png"
 YELLOW_IMG = "./static/images/yellow.png"
 BLUE_IMG = "./static/images/blue.png"
-SUCCESS_SCORE = 3
+
 
 class IndexController:
     def __init__(self):
@@ -33,8 +35,10 @@ class IndexController:
         # Load Audios
         pygame.mixer.init()
         pygame.mixer.music.set_volume(0.5)
-        pygame.mixer.music.load(STAGE_AUDIO)
-        pygame.mixer.music.play(-1)
+        self.stage_audio = pygame.mixer.music.load(STAGE_AUDIO)
+        self.failed_audio = pygame.mixer.Sound(FAILED_AUDIO)
+        self.success_audio = pygame.mixer.Sound(SUCCESS_AUDIO)
+        self.eat_effect = pygame.mixer.Sound(EAT_EFFECT)
         # Settings
         self.points = []  # all points of the pacman
         self.current_point = 0, 0  # current headig point
@@ -50,7 +54,7 @@ class IndexController:
         if self.cap.isOpened():
             self.random_food_location()
             detector = HandDetector(detectionCon=0.8, maxHands=1)
-            pygame.mixer.music.play()
+            pygame.mixer.music.play(-1)
             while True:
                 success, img = self.cap.read()
                 img = cv2.flip(img, 1)
@@ -89,21 +93,22 @@ class IndexController:
         self.points.append([self.current_point[0], self.current_point[1]])
         # Check if Pacman ate the Food
         if self.food_point[0] - self.food_width // 2 < self.current_point[0] < self.food_point[0] + self.food_width // 2 and self.food_point[1] - self.food_height // 2 < self.current_point[1] < self.food_point[1] + self.food_height // 2:
-            self.random_food_location()
+            self.eat_effect.play()
             self.score += 1
+            self.random_food_location()
             if self.score == SUCCESS_SCORE:
                 cvzone.putTextRect(main_img, "Game Clear!!", [int(self.display_height / 3), int(self.display_width / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
                 cvzone.putTextRect(main_img, f"Your Score: {self.score}", [int(self.display_height / 3), int(self.display_width / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
-                pygame.mixer.music.load(SUCCESS_AUDIO)
-                pygame.mixer.music.play(0)
+                pygame.mixer.music.pause()
+                self.success_audio.play()
                 self.cap.release()
                 return main_img
-        # Check if Monster ate the Pacman
+        # Check if Pacman collided with monsters
         if self.red_point[0] - self.red_width // 2 < self.current_point[0] < self.red_point[0] + self.red_width // 2 and self.red_point[1] - self.red_height // 2 < self.current_point[1] < self.red_point[1] + self.red_height // 2 or self.yellow_point[0] - self.wYellow // 2 < self.current_point[0] < self.yellow_point[0] + self.wYellow // 2 and self.yellow_point[1] - self.yellow_height // 2 < self.current_point[1] < self.yellow_point[1] + self.yellow_height // 2 or self.blue_point[0] - self.wBlue // 2 < self.current_point[0] < self.blue_point[0] + self.wBlue // 2 and self.blue_point[1] - self.blue_height // 2 < self.current_point[1] < self.blue_point[1] + self.blue_height // 2:
             cvzone.putTextRect(main_img, "Game Over", [int(self.display_height / 2), int(self.display_width / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
             cvzone.putTextRect(main_img, f"Your Score: {self.score}", [int(self.display_height / 3), int(self.display_width / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
-            pygame.mixer.music.load(FAILED_AUDIO)
-            pygame.mixer.music.play(0)
+            pygame.mixer.music.pause()
+            self.failed_audio.play()
             self.cap.release()
             return main_img
         if self.points:
