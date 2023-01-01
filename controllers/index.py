@@ -7,10 +7,11 @@ import random
 import math
 
 STAGE_AUDIO = "./static/audios/main.mp3"
-FOOD_IMG = "./static/images/food.png"
+FOOD_IMG = "./static/images/cherry.png"
 RED_IMG = "./static/images/red.png"
 YELLOW_IMG = "./static/images/yellow.png"
 BLUE_IMG = "./static/images/blue.png"
+
 
 
 class IndexController:
