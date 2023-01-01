@@ -11,22 +11,10 @@ run:
 format: 
 	black . --line-length=1000
 	flake8
-write_env:
+env:
 	pipreqs --force 
-prod_mode:
-	export FLASK_ENV=production
-dev_mode:
-	export FLASK_ENV=development
-
-# npm scripts
-build:
-	npm run build
-watch:
-	npm run watch
 
 # installation
 install:
-	npm install && npm run build
 	pip install -r requirements.txt
 	FLASK_APP=app.py
-	FLASK_DEBUG=1 
