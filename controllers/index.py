@@ -28,7 +28,7 @@ class IndexController:
         self.imgBlue = cv2.imread(BLUE_IMG, cv2.IMREAD_UNCHANGED)
         self.hBlue, self.wBlue, _ = self.imgBlue.shape
         self.bluePoint = random.randint(100, 1000), random.randint(100, 600)
-        # Load 
+        # Load Audios
         pygame.mixer.init()
         pygame.mixer.music.set_volume(0.5)
         pygame.mixer.music.load(STAGE_AUDIO)
