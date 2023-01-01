@@ -62,20 +62,32 @@ class IndexController:
                 break
             else:
                 hands, img = self.detector.findHands(img, flipType=False)
-                # bg_img = np.zeros((self.dh, self.dw, 3), np.uint8)
+                bg_img = np.zeros((self.dh, self.dw, 3), np.uint8)
                 if hands:
                     self.currentHead = hands[0]["lmList"][8][0:2]
-                    img = self.update(img)
-                    # bg_img = self.update(bg_img)
-                _, buffer = cv2.imencode(".jpg", img)
-                # _, buffer = cv2.imencode(".jpg", bg_img)
+                    bg_img = self.update(bg_img)
+                _, buffer = cv2.imencode(".jpg", bg_img)
                 yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + buffer.tobytes() + b"\r\n")
 
     def randomFoodLocation(self):
         self.foodPoint = random.randint(100, 1000), random.randint(100, 600)
 
-    # def moveMonster(self, img, imgMain, x, y, wImg, hImg):
-    #     return cvzone.overlayPNG(imgMain, img, (x - wImg // 2, y - hImg // 2))
+    def moveMonster(self, imgMain, img, wImg, hImg, monsterPoint, i, distance):
+        points = (int(monsterPoint[0] + (self.points[i - 1][0] - monsterPoint[0]) / distance), int(monsterPoint[1] + (self.points[i - 1][1] - monsterPoint[1]) / distance))
+        return cvzone.overlayPNG(imgMain, img, (points[0] - wImg // 2, points[1] - hImg // 2)), points
+
+    def mouseVector(self, imgMain, distance, i):
+        if distance > 0:
+            unit_vector = ((self.points[i - 1][0] - self.points[i][0]) / distance, (self.points[i - 1][1] - self.points[i][1]) / distance)
+            start_angle = math.atan2(unit_vector[1], unit_vector[0]) * 180 / math.pi
+            end_angle = start_angle + math.pi * 2 * (5 / 6) * 180 / math.pi
+            cv2.ellipse(imgMain, self.points[i], (30, 30), 180, start_angle, end_angle, (0, 255, 255), thickness=-1)
+
+    def calcDistance(self, i, MonsterPoints=False):
+        if MonsterPoints:
+            return math.sqrt((self.points[i][0] - MonsterPoints[0]) ** 2 + (self.points[i][1] - MonsterPoints[1]) ** 2)
+        else:
+            return math.sqrt((self.points[i - 1][0] - self.points[i][0]) ** 2 + (self.points[i - 1][1] - self.points[i][1]) ** 2)
 
     def update(self, imgMain):
         if self.gameOver:
@@ -92,61 +104,29 @@ class IndexController:
             self.currentLength += distance
             self.previousHead = cx, cy
 
-            # Length Reduction
-            if self.currentLength > self.allowedLength:
-                for i, length in enumerate(self.lengths):
-                    self.currentLength -= length
-                    self.lengths.pop(i)
-                    self.points.pop(i)
-                    if self.currentLength < self.allowedLength:
-                        break
-
             # Check if Pacman ate the Food
-            fx, fy = self.foodPoint
-            if fx - self.wFood // 2 < cx < fx + self.wFood // 2 and fy - self.hFood // 2 < cy < fy + self.hFood // 2:
+            if  self.foodPoint[0] - self.wFood // 2 < cx <  self.foodPoint[0] + self.wFood // 2 and  self.foodPoint[1] - self.hFood // 2 < cy <  self.foodPoint[1] + self.hFood // 2:
                 self.randomFoodLocation()
                 self.allowedLength += 50
                 self.score += 1
             # Check if Monster ate the Pacman
-            rx, ry = self.redPoint
-            yx, yy = self.yellowPoint
-            bx, by = self.bluePoint
-            if rx - self.wRed // 2 < cx < rx + self.wRed // 2 and ry - self.hRed // 2 < cy < ry + self.hRed // 2 or yx - self.wYellow // 2 < cx < yx + self.wYellow // 2 and yy - self.hYellow // 2 < cy < yy + self.hYellow // 2 or bx - self.wBlue // 2 < cx < bx + self.wBlue // 2 and by - self.hBlue // 2 < cy < by + self.hBlue // 2:
-                print("monster ate the pacman")
-            # Draw Pacman
+            if self.redPoint[0] - self.wRed // 2 < cx < self.redPoint[0] + self.wRed // 2 and self.redPoint[1] - self.hRed // 2 < cy < self.redPoint[1] + self.hRed // 2 or self.yellowPoint[0] - self.wYellow // 2 < cx < self.yellowPoint[0] + self.wYellow // 2 and self.yellowPoint[1] - self.hYellow // 2 < cy < self.yellowPoint[1] + self.hYellow // 2 or self.bluePoint[0] - self.wBlue // 2 < cx < self.bluePoint[0] + self.wBlue // 2 and self.bluePoint[1] - self.hBlue // 2 < cy < self.bluePoint[1] + self.hBlue // 2:
+                print("HITTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT!!!")
             if self.points:
-                for i, point in enumerate(self.points):
-                    if i != 0:
-                    # cv2.line(imgMain, self.points[i - 1], self.points[i], (0, 0, 0), 20)
-                        distance = math.sqrt((self.points[i - 1][0] - self.points[i][0]) ** 2 + (self.points[i - 1][1] - self.points[i][1]) ** 2)
-                        ##########
-                        redDistance = math.sqrt((self.points[i - 1][0] - self.redPoint[0]) ** 2 + (self.points[i - 1][1] - self.redPoint[1]) ** 2)
-                        self.redPoint = (self.redPoint[0] + (self.points[i - 1][0] - self.redPoint[0]) / redDistance, self.redPoint[1] + (self.points[i - 1][1] - self.redPoint[1]) / redDistance)
-                        rx, ry = self.redPoint
-                        # 
-                        yellowDistance = math.sqrt((self.points[i - 1][0] - self.yellowPoint[0]) ** 2 + (self.points[i - 1][1] - self.yellowPoint[1]) ** 2)
-                        self.yellowPoint = (self.yellowPoint[0] + (self.points[i - 1][0] - self.yellowPoint[0]) / yellowDistance, self.yellowPoint[1] + (self.points[i - 1][1] - self.yellowPoint[1]) / yellowDistance)
-                        yx, yy = self.yellowPoint
-                        # 
-                        blueDistance = math.sqrt((self.points[i - 1][0] - self.bluePoint[0]) ** 2 + (self.points[i - 1][1] - self.bluePoint[1]) ** 2)
-                        self.bluePoint = (self.bluePoint[0] + (self.points[i - 1][0] - self.bluePoint[0]) / blueDistance, self.bluePoint[1] + (self.points[i - 1][1] - self.bluePoint[1]) / blueDistance)
-                        bx, by = self.bluePoint
-                        ##########
-                # if distance > 0:
-                        unit_vector = ((self.points[i - 1][0] - self.points[i][0]) / distance, (self.points[i - 1][1] - self.points[i][1]) / distance)
-                        start_angle = math.atan2(unit_vector[1], unit_vector[0]) * 180 / math.pi
-                        end_angle = start_angle + math.pi * 2 * (5 / 6) * 180 / math.pi
-                        cv2.ellipse(imgMain, self.points[i], (30, 30), 180, start_angle, end_angle, (0, 255, 255), thickness=-1)
-                    # Draw monsters
-                    # imgMain = self.moveMonster(imgMain, self.imgRed, rx, ry, self.wRed, self.hRed) # red
-                    # imgMain = self.moveMonster(imgMain, self.imgYellow, yx, yy, self.wYellow, self.hYellow) # yellow
-                    # imgMain = self.moveMonster(imgMain, self.imgBlue, bx, by, self.wBlue, self.hBlue) # blue
-                    # print(rx, self.wRed,  ry,  self.hRed)
-                        imgMain = cvzone.overlayPNG(imgMain, self.imgRed, (rx - self.wRed // 2, ry - self.hRed // 2))
-                        imgMain = cvzone.overlayPNG(imgMain, self.imgYellow, (yx - self.wYellow // 2, yy - self.hYellow // 2))
-                        imgMain = cvzone.overlayPNG(imgMain, self.imgBlue, (bx - self.wBlue // 2, by - self.hBlue // 2))
+                for i, _ in enumerate(self.points):
+                # Draw Pacman
+                    distance = self.calcDistance(i)
+                    Reddistance = self.calcDistance(i, self.redPoint)
+                    Yellowdistance = self.calcDistance(i, self.yellowPoint)
+                    Bluedistance = self.calcDistance(i, self.bluePoint)
+                if distance > 0:
+                    self.mouseVector(imgMain, distance, i)
+                # Draw monsters
+                imgMain, self.redPoint = self.moveMonster(imgMain, self.imgRed, self.wRed, self.hRed, self.redPoint, i, Reddistance)
+                imgMain, self.yellowPoint = self.moveMonster(imgMain, self.imgYellow, self.wYellow, self.hYellow, self.yellowPoint, i, Yellowdistance)
+                imgMain, self.bluePoint = self.moveMonster(imgMain, self.imgBlue, self.wBlue, self.hBlue, self.bluePoint, i, Bluedistance)
             # Draw Food
-            imgMain = cvzone.overlayPNG(imgMain, self.imgFood, (fx - self.wFood // 2, fy - self.hFood // 2))
+            imgMain = cvzone.overlayPNG(imgMain, self.imgFood, (self.foodPoint[0] - self.wFood // 2, self.foodPoint[1] - self.hFood // 2))
             cvzone.putTextRect(imgMain, f"Score: {self.score}", [50, 80], scale=3, thickness=3, offset=10, colorR=(0, 0, 0), colorT=(0, 0, 255))
 
             # Check for Collision
