@@ -10,7 +10,7 @@ run:
 	flask run -h 0.0.0.0 -p 80
 format: 
 	black . --line-length=1000
-	.flake8
+	flake8
 write_env:
 	pipreqs --force 
 prod_mode:

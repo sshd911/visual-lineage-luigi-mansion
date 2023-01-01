@@ -24,6 +24,9 @@ class IndexController:
         self.score = 0
         self.gameOver = False
         self.detector = HandDetector(detectionCon=0.8, maxHands=1)
+        self.cap = 0
+        self.dh = 0
+        self.dw = 0
         # pygame.mixer.init()
         # pygame.mixer.music.set_volume(0.5)
         # pygame.mixer.music.load(STAGE_AUDIO)
@@ -31,33 +34,35 @@ class IndexController:
         # pygame.mixer.music.pause()
 
     def index(self):
-        cap = cv2.VideoCapture(0)
-        dw = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        dh = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        if cap.isOpened():
+        self.cap = cv2.VideoCapture(0)
+        self.dw = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        self.dh = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        if self.cap.isOpened():
             while True:
-                _, img = cap.read()
+                success, img = self.cap.read()
                 img = cv2.flip(img, 1)
-                hands, img = self.detector.findHands(img, flipType=False)
-                # bg_img = np.zeros((dh, dw, 3), np.uint8)
-                if hands:
-                    lmList = hands[0]["lmList"]
-                    pointIndex = lmList[8][0:2]
-                    img = self.update(img, pointIndex, dh, dw, cap)
-                    # bg_img = self.update(bg_img, pointIndex, dh, dw, cap)
-                _, buffer = cv2.imencode(".jpg", img)
-                # _, buffer = cv2.imencode(".jpg", bg_img)
-                yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + buffer.tobytes() + b"\r\n")
+                if not success:
+                    break
+                else:
+                    hands, img = self.detector.findHands(img, flipType=False)
+                    # bg_img = np.zeros((dh, dw, 3), np.uint8)
+                    if hands:
+                        lmList = hands[0]["lmList"]
+                        pointIndex = lmList[8][0:2]
+                        img = self.update(img, pointIndex)
+                        # bg_img = self.update(bg_img, pointIndex, dh, dw, cap)
+                    _, buffer = cv2.imencode(".jpg", img)
+                    # _, buffer = cv2.imencode(".jpg", bg_img)
+                    yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + buffer.tobytes() + b"\r\n")
 
     def randomFoodLocation(self):
         self.foodPoint = random.randint(100, 1000), random.randint(100, 600)
 
-    def update(self, imgMain, currentHead, dh, dw, cap):
+    def update(self, imgMain, currentHead):
         if self.gameOver:
-            cvzone.putTextRect(imgMain, "Game Over", [int(dh / 2), int(dw / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
-            cvzone.putTextRect(imgMain, f"Your Score: {self.score}", [int(dh / 3), int(dw / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
-            cap.release()
-            cv2.destroyAllWindows()
+            cvzone.putTextRect(imgMain, "Game Over", [int(self.dh / 2), int(self.dw / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
+            cvzone.putTextRect(imgMain, f"Your Score: {self.score}", [int(self.dh / 3), int(self.dw / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
+            self.cap.release()
             return imgMain
         else:
             px, py = self.previousHead
