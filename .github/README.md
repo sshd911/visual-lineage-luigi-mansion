@@ -1,7 +1,5 @@
 <h1 align="center">Visual Lineage - Pacman</h1>
-This is the easily game of pacman with computer vision using hand trackig.
-
-But I don't know as well about pacman, sorry...
+Easily game of pacman with computer vision using handtrackig
 
 ## Usage
 ```bash
