@@ -13,7 +13,6 @@ YELLOW_IMG = "./static/images/yellow.png"
 BLUE_IMG = "./static/images/blue.png"
 
 
-
 class IndexController:
     def __init__(self):
         # Load Images
@@ -105,7 +104,7 @@ class IndexController:
             self.previousHead = cx, cy
 
             # Check if Pacman ate the Food
-            if  self.foodPoint[0] - self.wFood // 2 < cx <  self.foodPoint[0] + self.wFood // 2 and  self.foodPoint[1] - self.hFood // 2 < cy <  self.foodPoint[1] + self.hFood // 2:
+            if self.foodPoint[0] - self.wFood // 2 < cx < self.foodPoint[0] + self.wFood // 2 and self.foodPoint[1] - self.hFood // 2 < cy < self.foodPoint[1] + self.hFood // 2:
                 self.randomFoodLocation()
                 self.allowedLength += 50
                 self.score += 1
@@ -114,7 +113,7 @@ class IndexController:
                 print("HITTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT!!!")
             if self.points:
                 for i, _ in enumerate(self.points):
-                # Draw Pacman
+                    # Draw Pacman
                     distance = self.calcDistance(i)
                     Reddistance = self.calcDistance(i, self.redPoint)
                     Yellowdistance = self.calcDistance(i, self.yellowPoint)
