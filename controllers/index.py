@@ -6,27 +6,44 @@ import cv2
 import random
 import math
 
-FOOD_IMG = "./static/images/food.png"
 STAGE_AUDIO = "./static/audios/main.mp3"
+FOOD_IMG = "./static/images/food.png"
+RED_IMG = "./static/images/red.png"
+YELLOW_IMG = "./static/images/yellow.png"
+BLUE_IMG = "./static/images/blue.png"
 
 
 class IndexController:
     def __init__(self):
+        # Load Images
+        self.imgFood = cv2.imread(FOOD_IMG, cv2.IMREAD_UNCHANGED)
+        self.hFood, self.wFood, _ = self.imgFood.shape
+        self.foodPoint = 0, 0
+        self.imgRed = cv2.imread(RED_IMG, cv2.IMREAD_UNCHANGED)
+        self.hRed, self.wRed, _ = self.imgRed.shape
+        self.redPoint = random.randint(100, 1000), random.randint(100, 600)
+        self.imgYellow = cv2.imread(YELLOW_IMG, cv2.IMREAD_UNCHANGED)
+        self.hYellow, self.wYellow, _ = self.imgYellow.shape
+        self.yellowPoint = random.randint(100, 1000), random.randint(100, 600)
+        self.imgBlue = cv2.imread(BLUE_IMG, cv2.IMREAD_UNCHANGED)
+        self.hBlue, self.wBlue, _ = self.imgBlue.shape
+        self.bluePoint = random.randint(100, 1000), random.randint(100, 600)
+
+        self.detector = HandDetector(detectionCon=0.8, maxHands=1)
+        self.randomLocation()
+        self.moveMonster()
         self.points = []  # all points of the snake
         self.lengths = []  # distance between each point
         self.currentLength = 0  # total length of the snake
         self.allowedLength = 150  # total allowed Length
+        self.currentHead = 0, 0  # current headig point
         self.previousHead = 0, 0  # previous headig -t NS d point
-        self.imgFood = cv2.imread(FOOD_IMG, cv2.IMREAD_UNCHANGED)
-        self.hFood, self.wFood, _ = self.imgFood.shape
-        self.foodPoint = 0, 0
-        self.randomFoodLocation()
-        self.score = 0
-        self.gameOver = False
-        self.detector = HandDetector(detectionCon=0.8, maxHands=1)
-        self.cap = 0
-        self.dh = 0
-        self.dw = 0
+        self.gameOver = False  # game flag
+        self.score = 0  # count of eaten food
+        self.cap = 0  # videoCapture instance
+        self.dh = 0  # display height
+        self.dw = 0  # display width
+
         # pygame.mixer.init()
         # pygame.mixer.music.set_volume(0.5)
         # pygame.mixer.music.load(STAGE_AUDIO)
@@ -37,28 +54,34 @@ class IndexController:
         self.cap = cv2.VideoCapture(0)
         self.dw = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.dh = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        if self.cap.isOpened():
-            while True:
-                success, img = self.cap.read()
-                img = cv2.flip(img, 1)
-                if not success:
-                    break
-                else:
-                    hands, img = self.detector.findHands(img, flipType=False)
-                    # bg_img = np.zeros((dh, dw, 3), np.uint8)
-                    if hands:
-                        lmList = hands[0]["lmList"]
-                        pointIndex = lmList[8][0:2]
-                        img = self.update(img, pointIndex)
-                        # bg_img = self.update(bg_img, pointIndex, dh, dw, cap)
-                    _, buffer = cv2.imencode(".jpg", img)
-                    # _, buffer = cv2.imencode(".jpg", bg_img)
-                    yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + buffer.tobytes() + b"\r\n")
+        while True:
+            success, img = self.cap.read()
+            img = cv2.flip(img, 1)
+            if not success:
+                break
+            else:
+                hands, img = self.detector.findHands(img, flipType=False)
+                # bg_img = np.zeros((self.dh, self.dw, 3), np.uint8)
+                if hands:
+                    self.currentHead = hands[0]["lmList"][8][0:2]
+                    img = self.update(img)
+                    # bg_img = self.update(bg_img)
+                _, buffer = cv2.imencode(".jpg", img)
+                # _, buffer = cv2.imencode(".jpg", bg_img)
+                yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + buffer.tobytes() + b"\r\n")
 
-    def randomFoodLocation(self):
+    def randomLocation(self):
         self.foodPoint = random.randint(100, 1000), random.randint(100, 600)
+        self.redPoint = random.randint(100, 1000), random.randint(100, 600)
+        self.yellowPoint = random.randint(100, 1000), random.randint(100, 600)
+        self.bluePoint = random.randint(100, 1000), random.randint(100, 600)
 
-    def update(self, imgMain, currentHead):
+    def moveMonster(self):
+        self.redPoint = random.randint(100, 1000), random.randint(100, 600)
+        self.yellowPoint = random.randint(100, 1000), random.randint(100, 600)
+        self.bluePoint = random.randint(100, 1000), random.randint(100, 600)
+
+    def update(self, imgMain):
         if self.gameOver:
             cvzone.putTextRect(imgMain, "Game Over", [int(self.dh / 2), int(self.dw / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
             cvzone.putTextRect(imgMain, f"Your Score: {self.score}", [int(self.dh / 3), int(self.dw / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
@@ -66,7 +89,7 @@ class IndexController:
             return imgMain
         else:
             px, py = self.previousHead
-            cx, cy = currentHead
+            cx, cy = self.currentHead
             self.points.append([cx, cy])
             distance = math.hypot(cx - px, cy - py)
             self.lengths.append(distance)
@@ -82,43 +105,46 @@ class IndexController:
                     if self.currentLength < self.allowedLength:
                         break
 
-            # Check if Packman ate the Food
-            rx, ry = self.foodPoint
-            if rx - self.wFood // 2 < cx < rx + self.wFood // 2 and ry - self.hFood // 2 < cy < ry + self.hFood // 2:
-                self.randomFoodLocation()
+            # Check if Pacman ate the Food
+            fx, fy = self.foodPoint
+            if fx - self.wFood // 2 < cx < fx + self.wFood // 2 and fy - self.hFood // 2 < cy < fy + self.hFood // 2:
+                self.randomLocation()
                 self.allowedLength += 50
                 self.score += 1
-            # Draw Packman
+            # Check if Monster ate the Pacman
+            rx, ry = self.redPoint
+            yx, yy = self.yellowPoint
+            bx, by = self.bluePoint
+            if rx - self.wFood // 2 < cx < rx + self.wFood // 2 and ry - self.hFood // 2 < cy < ry + self.hFood // 2 | yx - self.wFood // 2 < cx < yx + self.wFood // 2 and yy - self.hFood // 2 < cy < yy + self.hFood // 2 | bx - self.wFood // 2 < cx < bx + self.wFood // 2 and by - self.hFood // 2 < cy < by + self.hFood // 2:
+                print("monster ate the pacman")
+            # Draw Pacman
             if self.points:
                 for i, point in enumerate(self.points):
-                    if i != 0:
-                        cv2.line(imgMain, self.points[i - 1], self.points[i], (0, 0, 0), 20)
-                distance = math.sqrt((self.points[i - 1][0] - self.points[i][0]) ** 2 + (self.points[i - 1][1] - self.points[i][1]) ** 2)
+                    # if i != 0:
+                    # cv2.line(imgMain, self.points[i - 1], self.points[i], (0, 0, 0), 20)
+                    distance = math.sqrt((self.points[i - 1][0] - self.points[i][0]) ** 2 + (self.points[i - 1][1] - self.points[i][1]) ** 2)
                 if distance > 0:
                     unit_vector = ((self.points[i - 1][0] - self.points[i][0]) / distance, (self.points[i - 1][1] - self.points[i][1]) / distance)
                     start_angle = math.atan2(unit_vector[1], unit_vector[0]) * 180 / math.pi
                     end_angle = start_angle + math.pi * 2 * (5 / 6) * 180 / math.pi
                     cv2.ellipse(imgMain, self.points[i], (30, 30), 180, start_angle, end_angle, (0, 255, 255), thickness=-1)
+                # Draw monsters
+                imgMain = cvzone.overlayPNG(imgMain, self.imgRed, (rx - self.wRed // 2, ry - self.hRed // 2))
+                imgMain = cvzone.overlayPNG(imgMain, self.imgYellow, (yx - self.wYellow // 2, yy - self.hYellow // 2))
+                imgMain = cvzone.overlayPNG(imgMain, self.imgBlue, (bx - self.wBlue // 2, by - self.hBlue // 2))
 
             # Draw Food
-            imgMain = cvzone.overlayPNG(imgMain, self.imgFood, (rx - self.wFood // 2, ry - self.hFood // 2))
+            imgMain = cvzone.overlayPNG(imgMain, self.imgFood, (fx - self.wFood // 2, fy - self.hFood // 2))
             cvzone.putTextRect(imgMain, f"Score: {self.score}", [50, 80], scale=3, thickness=3, offset=10, colorR=(0, 0, 0), colorT=(0, 0, 255))
 
             # Check for Collision
-            pts = np.array(self.points[:-2], np.int32)
-            pts = pts.reshape((-1, 1, 2))
-            cv2.polylines(imgMain, [pts], False, (0, 0, 0), 3)
-            minDist = cv2.pointPolygonTest(pts, (cx, cy), True)
+            # pts = np.array(self.points[:-2], np.int32)
+            # pts = pts.reshape((-1, 1, 2))
+            # cv2.polylines(imgMain, [pts], False, (0, 0, 0), 3)
+            # minDist = cv2.pointPolygonTest(pts, (cx, cy), True)
             # print(minDist)
 
-            if -1 <= minDist <= 1:
-                # print("Hit")
-                self.gameOver = True
-                self.points = []  # all points of the snake
-                self.lengths = []  # distance between each point
-                self.currentLength = 0  # total length of the snake
-                self.allowedLength = 150  # total allowed Length
-                self.previousHead = 0, 0  # previous head point
-                self.randomFoodLocation()
+            # if -1 <=
+            # mFoodLocation()
 
             return imgMain

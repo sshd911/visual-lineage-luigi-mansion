@@ -1,4 +1,4 @@
-<h1 align="center">Visual Lineage - Packman</h1>
+<h1 align="center">Visual Lineage - Pacman</h1>
 <hr>
 <ul>
   <li>MediaPipe <a href="https://google.github.io/mediapipe/getting_started/install.html">Installation</a></li>

@@ -1,4 +1,4 @@
-# https://github.com/sshd911/visual-lineage-packman
+# https://github.com/sshd911/visual-lineage-pacman
 push:
 	git add .
 	git commit -m 'fix'
