@@ -16,8 +16,14 @@
       x-data="{
         isClicked: false,
         get confirmPrompt() {
-          document.querySelector('img').requestFullscreen()
-          document.querySelector('img').setAttribute('src', '{{ url_for('video_feed') }}')
+          navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+          .then(() => {
+            document.querySelector('img').requestFullscreen()
+            document.querySelector('img').setAttribute('src', '{{ url_for('video_feed') }}')
+          })
+          .catch(error => {
+            console.error('Error opening mic and camera:', error);
+          })
         }, 
       }"
 >
