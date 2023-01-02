@@ -69,7 +69,7 @@ class IndexController:
                     if hands:
                         self.current_point = hands[0]["lmList"][8][0:2]
                         bg_img = self.update(bg_img)
-                        cv2.imshow('desctop varsion', bg_img)
+                        cv2.imshow("desctop varsion", bg_img)
                         cv2.waitKey(1)
 
     def random_food_location(self):  # Cherry placement
@@ -99,7 +99,7 @@ class IndexController:
             self.eat_effect.play()
             self.score += 1
             self.random_food_location()
-            if self.score == SUCCESS_SCORE: # game clear
+            if self.score == SUCCESS_SCORE:  # game clear
                 cvzone.putTextRect(main_img, "Game Clear!!", [int(self.display_height / 3), int(self.display_width / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
                 cvzone.putTextRect(main_img, f"Your Score: {self.score}", [int(self.display_height / 3), int(self.display_width / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
                 pygame.mixer.music.pause()
@@ -132,5 +132,6 @@ class IndexController:
         cvzone.putTextRect(main_img, f"Score: {self.score}", [50, 80], scale=3, thickness=3, offset=10, colorR=(0, 0, 0), colorT=(0, 0, 255))
 
         return main_img
+
 
 IndexController().index()

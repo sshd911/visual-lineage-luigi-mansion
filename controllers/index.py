@@ -99,7 +99,7 @@ class IndexController:
             self.eat_effect.play()
             self.score += 1
             self.random_food_location()
-            if self.score == SUCCESS_SCORE: # game clear
+            if self.score == SUCCESS_SCORE:  # game clear
                 cvzone.putTextRect(main_img, "Game Clear!!", [int(self.display_height / 3), int(self.display_width / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
                 cvzone.putTextRect(main_img, f"Your Score: {self.score}", [int(self.display_height / 3), int(self.display_width / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
                 pygame.mixer.music.pause()
