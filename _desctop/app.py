@@ -24,8 +24,9 @@ class IndexController:
         # Load Audios
         pygame.mixer.init()
         pygame.mixer.music.set_volume(0.1)
-        pygame.mixer.Sound(INTRO_AUDIO).play()
-        self.stage_audio = pygame.mixer.music.load(STAGE_AUDIO)
+        pygame.mixer.music.load(INTRO_AUDIO)
+        pygame.mixer.music.play()
+        pygame.mixer.music.queue(STAGE_AUDIO)
         self.failed_audio = pygame.mixer.Sound(FAILED_AUDIO)
         self.success_audio = pygame.mixer.Sound(SUCCESS_AUDIO)
         self.eat_effect = pygame.mixer.Sound(EAT_EFFECT)
@@ -57,7 +58,6 @@ class IndexController:
         if self.cap.isOpened():
             self.random_food_location()
             detector = HandDetector(detectionCon=0.8, maxHands=1)
-            pygame.mixer.music.play(-1)
             while True:
                 success, img = self.cap.read()
                 img = cv2.flip(img, 1)
@@ -69,8 +69,8 @@ class IndexController:
                     if hands:
                         self.current_point = hands[0]["lmList"][8][0:2]
                         bg_img = self.update(bg_img)
-                    cv2.imshow('desctop varsion', bg_img)
-                    cv2.waitKey(1)
+                        cv2.imshow('desctop varsion', bg_img)
+                        cv2.waitKey(1)
 
     def random_food_location(self):  # Cherry placement
         self.food_point = random.randint(100, 1000), random.randint(100, 600)
@@ -94,19 +94,19 @@ class IndexController:
 
     def update(self, main_img):
         self.points.append([self.current_point[0], self.current_point[1]])
-        # Check if Pacman ate the Food
+        # Check if Pacman ate the Food # score up
         if self.food_point[0] - self.food_width // 2 < self.current_point[0] < self.food_point[0] + self.food_width // 2 and self.food_point[1] - self.food_height // 2 < self.current_point[1] < self.food_point[1] + self.food_height // 2:
             self.eat_effect.play()
             self.score += 1
             self.random_food_location()
-            if self.score == SUCCESS_SCORE:
+            if self.score == SUCCESS_SCORE: # game clear
                 cvzone.putTextRect(main_img, "Game Clear!!", [int(self.display_height / 3), int(self.display_width / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
                 cvzone.putTextRect(main_img, f"Your Score: {self.score}", [int(self.display_height / 3), int(self.display_width / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
                 pygame.mixer.music.pause()
                 self.success_audio.play()
                 self.cap.release()
                 return main_img
-        # Check if Pacman collided with monsters
+        # Check if Pacman collided with monsters # game over
         if self.red_point[0] - self.red_width // 2 < self.current_point[0] < self.red_point[0] + self.red_width // 2 and self.red_point[1] - self.red_height // 2 < self.current_point[1] < self.red_point[1] + self.red_height // 2 or self.yellow_point[0] - self.wYellow // 2 < self.current_point[0] < self.yellow_point[0] + self.wYellow // 2 and self.yellow_point[1] - self.yellow_height // 2 < self.current_point[1] < self.yellow_point[1] + self.yellow_height // 2 or self.blue_point[0] - self.wBlue // 2 < self.current_point[0] < self.blue_point[0] + self.wBlue // 2 and self.blue_point[1] - self.blue_height // 2 < self.current_point[1] < self.blue_point[1] + self.blue_height // 2:
             cvzone.putTextRect(main_img, "Game Over", [int(self.display_height / 2), int(self.display_width / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
             cvzone.putTextRect(main_img, f"Your Score: {self.score}", [int(self.display_height / 3), int(self.display_width / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
