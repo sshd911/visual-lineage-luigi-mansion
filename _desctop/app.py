@@ -1,4 +1,5 @@
 from cvzone.HandTrackingModule import HandDetector
+from flask import url_for
 import numpy as np
 import pygame
 import cvzone
@@ -6,18 +7,16 @@ import cv2
 import random
 import math
 
-
 SUCCESS_SCORE = 5
-INTRO_AUDIO = "./static/audios/intro.mp3"
-STAGE_AUDIO = "./static/audios/stage.mp3"
-FAILED_AUDIO = "./static/audios/failed.mp3"
-SUCCESS_AUDIO = "./static/audios/success.mp3"
-EAT_EFFECT = "./static/audios/eat.mp3"
-FOOD_IMG = "./static/images/cherry.png"
-RED_IMG = "./static/images/red.png"
-YELLOW_IMG = "./static/images/yellow.png"
-BLUE_IMG = "./static/images/blue.png"
-
+INTRO_AUDIO = url_for('static', filename='audios/intro.mp3')
+STAGE_AUDIO = url_for('static', filename='audios/stage.mp3')
+FAILED_AUDIO = url_for('static', filename='audios/failed.mp3')
+SUCCESS_AUDIO = url_for('static', filename='audios/success.mp3')
+EAT_EFFECT = url_for('static', filename='audios/eat.mp3')
+FOOD_IMG = url_for('static', filename='images/cherry.mp3')
+RED_IMG = url_for('static', filename='images/red.mp3')
+YELLOW_IMG = url_for('static', filename='images/yellow.mp3')
+BLUE_IMG = url_for('static', filename='images/blue.mp3')
 
 class IndexController:
     def __init__(self):
