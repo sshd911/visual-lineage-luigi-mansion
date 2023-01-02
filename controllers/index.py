@@ -5,19 +5,18 @@ import cvzone
 import cv2
 import random
 import math
-
+import os
 
 SUCCESS_SCORE = 5
-INTRO_AUDIO = "./static/audios/intro.mp3"
-STAGE_AUDIO = "./static/audios/stage.mp3"
-FAILED_AUDIO = "./static/audios/failed.mp3"
-SUCCESS_AUDIO = "./static/audios/success.mp3"
-EAT_EFFECT = "./static/audios/eat.mp3"
-FOOD_IMG = "./static/images/cherry.png"
-RED_IMG = "./static/images/red.png"
-YELLOW_IMG = "./static/images/yellow.png"
-BLUE_IMG = "./static/images/blue.png"
-
+INTRO_AUDIO = f"{os.getcwd()}/static/audios/intro.mp3"
+STAGE_AUDIO = f"{os.getcwd()}/static/audios/stage.mp3"
+FAILED_AUDIO = f"{os.getcwd()}/static/audios/failed.mp3"
+SUCCESS_AUDIO = f"{os.getcwd()}/static/audios/success.mp3"
+EAT_EFFECT = f"{os.getcwd()}/static/audios/eat.mp3"
+FOOD_IMG = f"{os.getcwd()}/static/images/cherry.png"
+RED_IMG = f"{os.getcwd()}/static/images/red.png"
+YELLOW_IMG = f"{os.getcwd()}/static/images/yellow.png"
+BLUE_IMG = f"{os.getcwd()}/static/images/blue.png"
 
 class IndexController:
     def __init__(self):
