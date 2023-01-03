@@ -54,18 +54,16 @@ class IndexController:
         self.display_height = 0
         self.display_width = 0
         self.score = 0
-        self.cap = 0
 
     def index(self):
-        self.cap = cv2.VideoCapture(0)
-        self.display_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        self.display_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        if self.cap.isOpened():
+        cap = cv2.VideoCapture(0)
+        self.display_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        self.display_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        if cap.isOpened():
             self.random_food_location()
             detector = HandDetector(detectionCon=0.8, maxHands=1)
             while True:
-                print(IMAGES_DIR, AUDIOS_DIR)
-                success, img = self.cap.read()
+                success, img = cap.read()
                 img = cv2.flip(img, 1)
                 if not success:
                     break
@@ -74,7 +72,7 @@ class IndexController:
                     bg_img = np.zeros((self.display_height, self.display_width, 3), np.uint8)
                     if hands:
                         self.current_point = hands[0]["lmList"][8][0:2]
-                        bg_img = self.update(bg_img)
+                        bg_img = self.update(bg_img, cap)
                     _, buffer = cv2.imencode(".jpg", bg_img)
                     yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + buffer.tobytes() + b"\r\n")
 
@@ -98,7 +96,7 @@ class IndexController:
         else:
             return math.sqrt((self.points[i - 1][0] - self.points[i][0]) ** 2 + (self.points[i - 1][1] - self.points[i][1]) ** 2)
 
-    def update(self, main_img):
+    def update(self, main_img, cap):
         self.points.append([self.current_point[0], self.current_point[1]])
         # Check if Pacman ate the Food # score up
         if self.food_point[0] - self.food_width // 2 < self.current_point[0] < self.food_point[0] + self.food_width // 2 and self.food_point[1] - self.food_height // 2 < self.current_point[1] < self.food_point[1] + self.food_height // 2:
@@ -110,7 +108,7 @@ class IndexController:
                 cvzone.putTextRect(main_img, f"Your Score: {self.score}", [int(self.display_height / 3), int(self.display_width / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
                 pygame.mixer.music.pause()
                 self.success_audio.play()
-                self.cap.release()
+                cap.release()
                 return main_img
         # Check if Pacman collided with monsters # game over
         if self.red_point[0] - self.red_width // 2 < self.current_point[0] < self.red_point[0] + self.red_width // 2 and self.red_point[1] - self.red_height // 2 < self.current_point[1] < self.red_point[1] + self.red_height // 2 or self.yellow_point[0] - self.wYellow // 2 < self.current_point[0] < self.yellow_point[0] + self.wYellow // 2 and self.yellow_point[1] - self.yellow_height // 2 < self.current_point[1] < self.yellow_point[1] + self.yellow_height // 2 or self.blue_point[0] - self.wBlue // 2 < self.current_point[0] < self.blue_point[0] + self.wBlue // 2 and self.blue_point[1] - self.blue_height // 2 < self.current_point[1] < self.blue_point[1] + self.blue_height // 2:
@@ -118,7 +116,7 @@ class IndexController:
             cvzone.putTextRect(main_img, f"Your Score: {self.score}", [int(self.display_height / 3), int(self.display_width / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
             pygame.mixer.music.pause()
             self.failed_audio.play()
-            self.cap.release()
+            cap.release()
             return main_img
         if self.points:
             for i, _ in enumerate(self.points):
