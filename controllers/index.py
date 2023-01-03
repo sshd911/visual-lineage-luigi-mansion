@@ -6,7 +6,11 @@ import cv2
 import random
 import math
 import os
-
+# absolute path to this file
+FILE_DIR = os.path.dirname(os.path.abspath(__file__))
+# absolute path to this file's root directory
+PARENT_DIR = os.path.join(FILE_DIR, os.pardir) 
+print(FILE_DIR, PARENT_DIR)
 #   TODO   FIX   os.getcwd()
 INTRO_AUDIO = f"{os.getcwd()}/static/audios/intro.mp3"
 STAGE_AUDIO = f"{os.getcwd()}/static/audios/stage.mp3"
