@@ -7,7 +7,7 @@ import random
 import math
 import os
 
-SUCCESS_SCORE = 5
+#   TODO   FIX   os.getcwd()
 INTRO_AUDIO = f"{os.getcwd()}/static/audios/intro.mp3"
 STAGE_AUDIO = f"{os.getcwd()}/static/audios/stage.mp3"
 FAILED_AUDIO = f"{os.getcwd()}/static/audios/failed.mp3"
@@ -17,6 +17,7 @@ FOOD_IMG = f"{os.getcwd()}/static/images/cherry.png"
 RED_IMG = f"{os.getcwd()}/static/images/red.png"
 YELLOW_IMG = f"{os.getcwd()}/static/images/yellow.png"
 BLUE_IMG = f"{os.getcwd()}/static/images/blue.png"
+SUCCESS_SCORE = 5
 
 class IndexController:
     def __init__(self):
@@ -31,24 +32,24 @@ class IndexController:
         self.eat_effect = pygame.mixer.Sound(EAT_EFFECT)
         # Load Images
         self.food_img = cv2.imread(FOOD_IMG, cv2.IMREAD_UNCHANGED)
-        self.food_height, self.food_width, _ = self.food_img.shape
-        self.food_point = 0, 0
         self.red_img = cv2.imread(RED_IMG, cv2.IMREAD_UNCHANGED)
-        self.red_height, self.red_width, _ = self.red_img.shape
-        self.red_point = random.randint(100, 1000), random.randint(100, 600)
         self.yellow_img = cv2.imread(YELLOW_IMG, cv2.IMREAD_UNCHANGED)
-        self.yellow_height, self.wYellow, _ = self.yellow_img.shape
-        self.yellow_point = random.randint(100, 1000), random.randint(100, 600)
         self.blue_img = cv2.imread(BLUE_IMG, cv2.IMREAD_UNCHANGED)
-        self.blue_height, self.wBlue, _ = self.blue_img.shape
+        self.red_point = random.randint(100, 1000), random.randint(100, 600)
         self.blue_point = random.randint(100, 1000), random.randint(100, 600)
+        self.yellow_point = random.randint(100, 1000), random.randint(100, 600)
         # Settings
+        self.food_height, self.food_width, _ = self.food_img.shape
+        self.red_height, self.red_width, _ = self.red_img.shape
+        self.yellow_height, self.wYellow, _ = self.yellow_img.shape
+        self.blue_height, self.wBlue, _ = self.blue_img.shape
         self.points = []  # all points of the pacman
         self.current_point = 0, 0  # current headig point
+        self.food_point = 0, 0
         self.display_height = 0
         self.display_width = 0
-        self.score = 0  # count of eaten food
-        self.cap = 0  # videoCapt ure instance
+        self.score = 0
+        self.cap = 0
 
     def index(self):
         self.cap = cv2.VideoCapture(0)

@@ -18,7 +18,6 @@
         get confirmPrompt() {
           navigator.mediaDevices.getUserMedia({ audio: true, video: true })
           .then(() => {
-            document.querySelector('img').requestFullscreen()
             document.querySelector('img').setAttribute('src', '{{ url_for('video_feed') }}')
           })
           .catch(error => {
