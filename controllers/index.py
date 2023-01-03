@@ -1,10 +1,12 @@
 from cvzone.HandTrackingModule import HandDetector
 from pydub.playback import _play_with_simpleaudio
 from pydub import AudioSegment
+from numba import jit, prange,vectorize
 import numpy as np
 import cvzone
 import cv2
 import random
+import copy
 import math
 import os
 
@@ -43,19 +45,21 @@ class IndexController:
         # Settings
         self.food_height, self.food_width, _ = self.food_img.shape
         self.red_height, self.red_width, _ = self.red_img.shape
-        self.yellow_height, self.wYellow, _ = self.yellow_img.shape
-        self.blue_height, self.wBlue, _ = self.blue_img.shape
+        self.yellow_height, self.yellow_width, _ = self.yellow_img.shape
+        self.blue_height, self.blue_width, _ = self.blue_img.shape
         self.points = []  # all points of the pacman
         self.current_point = 0, 0  # current headig point
         self.food_point = 0, 0
         self.display_height = 0
         self.display_width = 0
         self.score = 0
+        self.map = 0,0,0
 
     def index(self):
         cap = cv2.VideoCapture(0)
         self.display_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.display_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self.map = np.zeros((self.display_height, self.display_width, 3), np.uint8)
         if cap.isOpened():
             self.random_food_location()
             detector = HandDetector(detectionCon=0.8, maxHands=1)
@@ -66,11 +70,11 @@ class IndexController:
                     break
                 else:
                     hands, img = detector.findHands(img, flipType=False)
-                    bg_img = np.zeros((self.display_height, self.display_width, 3), np.uint8)
+                    map = copy.copy(self.map)
                     if hands:
                         self.current_point = hands[0]['lmList'][8][0:2]
-                        bg_img = self.update(bg_img, cap)
-                    _, buffer = cv2.imencode('.jpg', bg_img)
+                        map = self.update(map, cap)
+                    _, buffer = cv2.imencode('.jpg', map)
                     yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
 
     def random_food_location(self):  # Cherry placement
@@ -78,7 +82,8 @@ class IndexController:
 
     def move_monster(self, main_img, img, img_width, img_height, monster_point, i, distance):  # Monster movements
         points = (int(monster_point[0] + (self.points[i - 1][0] - monster_point[0]) / distance), int(monster_point[1] + (self.points[i - 1][1] - monster_point[1]) / distance))
-        return cvzone.overlayPNG(main_img, img, (points[0] - img_width // 2, points[1] - img_height // 2)), points
+        main_img = cvzone.overlayPNG(main_img, img, (points[0] - img_width // 2, points[1] - img_height // 2))
+        return main_img, points
 
     def mouth_movement(self, main_img, distance, i):  # Mouth movement of the pacman
         if distance > 0:
@@ -108,7 +113,7 @@ class IndexController:
                 cap.release()
                 return main_img
         # Check if Pacman collided with monsters # game over
-        if self.red_point[0] - self.red_width // 2 < self.current_point[0] < self.red_point[0] + self.red_width // 2 and self.red_point[1] - self.red_height // 2 < self.current_point[1] < self.red_point[1] + self.red_height // 2 or self.yellow_point[0] - self.wYellow // 2 < self.current_point[0] < self.yellow_point[0] + self.wYellow // 2 and self.yellow_point[1] - self.yellow_height // 2 < self.current_point[1] < self.yellow_point[1] + self.yellow_height // 2 or self.blue_point[0] - self.wBlue // 2 < self.current_point[0] < self.blue_point[0] + self.wBlue // 2 and self.blue_point[1] - self.blue_height // 2 < self.current_point[1] < self.blue_point[1] + self.blue_height // 2:
+        if self.red_point[0] - self.red_width // 2 < self.current_point[0] < self.red_point[0] + self.red_width // 2 and self.red_point[1] - self.red_height // 2 < self.current_point[1] < self.red_point[1] + self.red_height // 2 or self.yellow_point[0] - self.yellow_width // 2 < self.current_point[0] < self.yellow_point[0] + self.yellow_width // 2 and self.yellow_point[1] - self.yellow_height // 2 < self.current_point[1] < self.yellow_point[1] + self.yellow_height // 2 or self.blue_point[0] - self.blue_width // 2 < self.current_point[0] < self.blue_point[0] + self.blue_width // 2 and self.blue_point[1] - self.blue_height // 2 < self.current_point[1] < self.blue_point[1] + self.blue_height // 2:
             cvzone.putTextRect(main_img, 'Game Over', [int(self.display_height / 2), int(self.display_width / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
             cvzone.putTextRect(main_img, f'Your Score: {self.score}', [int(self.display_height / 3), int(self.display_width / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
             self.stage_audio.stop()
@@ -121,12 +126,12 @@ class IndexController:
                 red_distance = self.calculate_distance(i, self.red_point)
                 yellow_distance = self.calculate_distance(i, self.yellow_point)
                 blue_distance = self.calculate_distance(i, self.blue_point)
+                # Draw monsters
+                main_img, self.red_point = self.move_monster(main_img, self.red_img, self.red_width, self.red_height, self.red_point, i, red_distance)
+                main_img, self.yellow_point = self.move_monster(main_img, self.yellow_img, self.yellow_width, self.yellow_height, self.yellow_point, i, yellow_distance)
+                main_img, self.blue_point = self.move_monster(main_img, self.blue_img, self.blue_width, self.blue_height, self.blue_point, i, blue_distance)
             # Draw pacman
             self.mouth_movement(main_img, self_distance, i)
-            # Draw monsters
-            main_img, self.red_point = self.move_monster(main_img, self.red_img, self.red_width, self.red_height, self.red_point, i, red_distance)
-            main_img, self.yellow_point = self.move_monster(main_img, self.yellow_img, self.wYellow, self.yellow_height, self.yellow_point, i, yellow_distance)
-            main_img, self.blue_point = self.move_monster(main_img, self.blue_img, self.wBlue, self.blue_height, self.blue_point, i, blue_distance)
         # Draw Food
         main_img = cvzone.overlayPNG(main_img, self.food_img, (self.food_point[0] - self.food_width // 2, self.food_point[1] - self.food_height // 2))
         # Draw score
