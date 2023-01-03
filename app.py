@@ -1,8 +1,5 @@
 from flask import Flask, render_template, Response
 from controllers.index import IndexController
-import logging
-
-logging.basicConfig(filename='log/app.log', filemode='w', format='%(asctime)s - %(levelname)s - %(message)s')
 
 app = Flask(__name__)
 app.config["DEBUG"] = False
