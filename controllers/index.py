@@ -6,21 +6,22 @@ import cv2
 import random
 import math
 import os
-# absolute path to this file
+
 FILE_DIR = os.path.dirname(os.path.abspath(__file__))
-# absolute path to this file's root directory
 PARENT_DIR = os.path.join(FILE_DIR, os.pardir) 
-print(FILE_DIR, PARENT_DIR)
-#   TODO   FIX   os.getcwd()
-INTRO_AUDIO = f"{os.getcwd()}/static/audios/intro.mp3"
-STAGE_AUDIO = f"{os.getcwd()}/static/audios/stage.mp3"
-FAILED_AUDIO = f"{os.getcwd()}/static/audios/failed.mp3"
-SUCCESS_AUDIO = f"{os.getcwd()}/static/audios/success.mp3"
-EAT_EFFECT = f"{os.getcwd()}/static/audios/eat.mp3"
-FOOD_IMG = f"{os.getcwd()}/static/images/cherry.png"
-RED_IMG = f"{os.getcwd()}/static/images/red.png"
-YELLOW_IMG = f"{os.getcwd()}/static/images/yellow.png"
-BLUE_IMG = f"{os.getcwd()}/static/images/blue.png"
+STATIC_DIR = os.path.join(PARENT_DIR, 'static')
+IMAGES_DIR = os.path.join(STATIC_DIR, 'images')
+AUDIOS_DIR = os.path.join(STATIC_DIR, 'audios')
+
+INTRO_AUDIO = f"{AUDIOS_DIR}/intro.mp3"
+STAGE_AUDIO = f"{AUDIOS_DIR}/stage.mp3"
+FAILED_AUDIO = f"{AUDIOS_DIR}/failed.mp3"
+SUCCESS_AUDIO = f"{AUDIOS_DIR}/success.mp3"
+EAT_EFFECT = f"{AUDIOS_DIR}/eat.mp3"
+FOOD_IMG = f"{IMAGES_DIR}/cherry.png"
+RED_IMG = f"{IMAGES_DIR}/red.png"
+YELLOW_IMG = f"{IMAGES_DIR}/yellow.png"
+BLUE_IMG = f"{IMAGES_DIR}/blue.png"
 SUCCESS_SCORE = 5
 
 class IndexController:
@@ -63,6 +64,7 @@ class IndexController:
             self.random_food_location()
             detector = HandDetector(detectionCon=0.8, maxHands=1)
             while True:
+                print(IMAGES_DIR, AUDIOS_DIR)
                 success, img = self.cap.read()
                 img = cv2.flip(img, 1)
                 if not success:
