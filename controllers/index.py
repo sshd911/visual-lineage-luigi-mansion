@@ -10,18 +10,18 @@ import os
 
 FILE_DIR = os.path.dirname(os.path.abspath(__file__))
 PARENT_DIR = os.path.join(FILE_DIR, os.pardir)
-STATIC_DIR = os.path.join(PARENT_DIR, "static")
-IMAGES_DIR = os.path.join(STATIC_DIR, "images")
-AUDIOS_DIR = os.path.join(STATIC_DIR, "audios")
+STATIC_DIR = os.path.join(PARENT_DIR, 'static')
+IMAGES_DIR = os.path.join(STATIC_DIR, 'images')
+AUDIOS_DIR = os.path.join(STATIC_DIR, 'audios')
 
-STAGE_AUDIO = f"{AUDIOS_DIR}/stage.mp3"
-FAILED_AUDIO = f"{AUDIOS_DIR}/failed.mp3"
-SUCCESS_AUDIO = f"{AUDIOS_DIR}/success.mp3"
-EAT_EFFECT = f"{AUDIOS_DIR}/eat.mp3"
-FOOD_IMG = f"{IMAGES_DIR}/cherry.png"
-RED_IMG = f"{IMAGES_DIR}/red.png"
-YELLOW_IMG = f"{IMAGES_DIR}/yellow.png"
-BLUE_IMG = f"{IMAGES_DIR}/blue.png"
+STAGE_AUDIO = f'{AUDIOS_DIR}/stage.mp3'
+FAILED_AUDIO = f'{AUDIOS_DIR}/failed.mp3'
+SUCCESS_AUDIO = f'{AUDIOS_DIR}/success.mp3'
+EAT_EFFECT = f'{AUDIOS_DIR}/eat.mp3'
+FOOD_IMG = f'{IMAGES_DIR}/cherry.png'
+RED_IMG = f'{IMAGES_DIR}/red.png'
+YELLOW_IMG = f'{IMAGES_DIR}/yellow.png'
+BLUE_IMG = f'{IMAGES_DIR}/blue.png'
 SUCCESS_SCORE = 5
 
 
@@ -68,10 +68,10 @@ class IndexController:
                     hands, img = detector.findHands(img, flipType=False)
                     bg_img = np.zeros((self.display_height, self.display_width, 3), np.uint8)
                     if hands:
-                        self.current_point = hands[0]["lmList"][8][0:2]
+                        self.current_point = hands[0]['lmList'][8][0:2]
                         bg_img = self.update(bg_img, cap)
-                    _, buffer = cv2.imencode(".jpg", bg_img)
-                    yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + buffer.tobytes() + b"\r\n")
+                    _, buffer = cv2.imencode('.jpg', bg_img)
+                    yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
 
     def random_food_location(self):  # Cherry placement
         self.food_point = random.randint(100, 1000), random.randint(100, 600)
@@ -101,16 +101,16 @@ class IndexController:
             self.score += 1
             self.random_food_location()
             if self.score == SUCCESS_SCORE:  # game clear
-                cvzone.putTextRect(main_img, "Game Clear!!", [int(self.display_height / 3), int(self.display_width / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
-                cvzone.putTextRect(main_img, f"Your Score: {self.score}", [int(self.display_height / 3), int(self.display_width / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
+                cvzone.putTextRect(main_img, 'Game Clear!!', [int(self.display_height / 3), int(self.display_width / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
+                cvzone.putTextRect(main_img, f'Your Score: {self.score}', [int(self.display_height / 3), int(self.display_width / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
                 self.stage_audio.stop()
                 _play_with_simpleaudio(self.success_audio)
                 cap.release()
                 return main_img
         # Check if Pacman collided with monsters # game over
         if self.red_point[0] - self.red_width // 2 < self.current_point[0] < self.red_point[0] + self.red_width // 2 and self.red_point[1] - self.red_height // 2 < self.current_point[1] < self.red_point[1] + self.red_height // 2 or self.yellow_point[0] - self.wYellow // 2 < self.current_point[0] < self.yellow_point[0] + self.wYellow // 2 and self.yellow_point[1] - self.yellow_height // 2 < self.current_point[1] < self.yellow_point[1] + self.yellow_height // 2 or self.blue_point[0] - self.wBlue // 2 < self.current_point[0] < self.blue_point[0] + self.wBlue // 2 and self.blue_point[1] - self.blue_height // 2 < self.current_point[1] < self.blue_point[1] + self.blue_height // 2:
-            cvzone.putTextRect(main_img, "Game Over", [int(self.display_height / 2), int(self.display_width / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
-            cvzone.putTextRect(main_img, f"Your Score: {self.score}", [int(self.display_height / 3), int(self.display_width / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
+            cvzone.putTextRect(main_img, 'Game Over', [int(self.display_height / 2), int(self.display_width / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
+            cvzone.putTextRect(main_img, f'Your Score: {self.score}', [int(self.display_height / 3), int(self.display_width / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
             self.stage_audio.stop()
             _play_with_simpleaudio(self.failed_audio)
             cap.release()
@@ -130,6 +130,6 @@ class IndexController:
         # Draw Food
         main_img = cvzone.overlayPNG(main_img, self.food_img, (self.food_point[0] - self.food_width // 2, self.food_point[1] - self.food_height // 2))
         # Draw score
-        cvzone.putTextRect(main_img, f"Score: {self.score}", [50, 80], scale=3, thickness=3, offset=10, colorR=(0, 0, 0), colorT=(0, 0, 255))
+        cvzone.putTextRect(main_img, f'Score: {self.score}', [50, 80], scale=3, thickness=3, offset=10, colorR=(0, 0, 0), colorT=(0, 0, 255))
 
         return main_img
