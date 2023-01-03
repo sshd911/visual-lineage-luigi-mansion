@@ -1,34 +1,37 @@
 from cvzone.HandTrackingModule import HandDetector
+from pydub.playback import _play_with_simpleaudio
+from pydub import AudioSegment
 import numpy as np
-import pygame
 import cvzone
 import cv2
 import random
 import math
+import os
 
-#   TODO   FIX   os.getcwd()
-INTRO_AUDIO = "./static/audios/intro.mp3"
-STAGE_AUDIO = "./static/audios/stage.mp3"
-FAILED_AUDIO = "./static/audios/failed.mp3"
-SUCCESS_AUDIO = "./static/audios/success.mp3"
-EAT_EFFECT = "./static/audios/eat.mp3"
-FOOD_IMG = "./static/images/cherry.png"
-RED_IMG = "./static/images/red.png"
-YELLOW_IMG = "./static/images/yellow.png"
-BLUE_IMG = "./static/images/blue.png"
+FILE_DIR = os.path.dirname(os.path.abspath(__file__))
+PARENT_DIR = os.path.join(FILE_DIR, os.pardir)
+STATIC_DIR = os.path.join(PARENT_DIR, "static")
+IMAGES_DIR = os.path.join(STATIC_DIR, "images")
+AUDIOS_DIR = os.path.join(STATIC_DIR, "audios")
+
+STAGE_AUDIO = f"{AUDIOS_DIR}/stage.mp3"
+FAILED_AUDIO = f"{AUDIOS_DIR}/failed.mp3"
+SUCCESS_AUDIO = f"{AUDIOS_DIR}/success.mp3"
+EAT_EFFECT = f"{AUDIOS_DIR}/eat.mp3"
+FOOD_IMG = f"{IMAGES_DIR}/cherry.png"
+RED_IMG = f"{IMAGES_DIR}/red.png"
+YELLOW_IMG = f"{IMAGES_DIR}/yellow.png"
+BLUE_IMG = f"{IMAGES_DIR}/blue.png"
 SUCCESS_SCORE = 5
+
 
 class IndexController:
     def __init__(self):
         # Load Audios
-        pygame.mixer.init()
-        pygame.mixer.music.set_volume(0.1)
-        pygame.mixer.music.load(INTRO_AUDIO)
-        pygame.mixer.music.play()
-        pygame.mixer.music.queue(STAGE_AUDIO)
-        self.failed_audio = pygame.mixer.Sound(FAILED_AUDIO)
-        self.success_audio = pygame.mixer.Sound(SUCCESS_AUDIO)
-        self.eat_effect = pygame.mixer.Sound(EAT_EFFECT)
+        self.stage_audio = _play_with_simpleaudio(AudioSegment.from_file(STAGE_AUDIO))
+        self.failed_audio = AudioSegment.from_file(FAILED_AUDIO)
+        self.success_audio = AudioSegment.from_file(SUCCESS_AUDIO)
+        self.eat_effect = AudioSegment.from_file(EAT_EFFECT)
         # Load Images
         self.food_img = cv2.imread(FOOD_IMG, cv2.IMREAD_UNCHANGED)
         self.red_img = cv2.imread(RED_IMG, cv2.IMREAD_UNCHANGED)
@@ -48,17 +51,16 @@ class IndexController:
         self.display_height = 0
         self.display_width = 0
         self.score = 0
-        self.cap = 0
 
     def index(self):
-        self.cap = cv2.VideoCapture(0)
-        self.display_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        self.display_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        if self.cap.isOpened():
+        cap = cv2.VideoCapture(0)
+        self.display_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        self.display_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        if cap.isOpened():
             self.random_food_location()
             detector = HandDetector(detectionCon=0.8, maxHands=1)
             while True:
-                success, img = self.cap.read()
+                success, img = cap.read()
                 img = cv2.flip(img, 1)
                 if not success:
                     break
@@ -67,7 +69,7 @@ class IndexController:
                     bg_img = np.zeros((self.display_height, self.display_width, 3), np.uint8)
                     if hands:
                         self.current_point = hands[0]["lmList"][8][0:2]
-                        bg_img = self.update(bg_img)
+                        bg_img = self.update(bg_img, cap)
                     cv2.imshow("desctop varsion", bg_img)
                     cv2.waitKey(1)
 
@@ -91,27 +93,27 @@ class IndexController:
         else:
             return math.sqrt((self.points[i - 1][0] - self.points[i][0]) ** 2 + (self.points[i - 1][1] - self.points[i][1]) ** 2)
 
-    def update(self, main_img):
+    def update(self, main_img, cap):
         self.points.append([self.current_point[0], self.current_point[1]])
         # Check if Pacman ate the Food # score up
         if self.food_point[0] - self.food_width // 2 < self.current_point[0] < self.food_point[0] + self.food_width // 2 and self.food_point[1] - self.food_height // 2 < self.current_point[1] < self.food_point[1] + self.food_height // 2:
-            self.eat_effect.play()
+            _play_with_simpleaudio(self.eat_effect)
             self.score += 1
             self.random_food_location()
             if self.score == SUCCESS_SCORE:  # game clear
                 cvzone.putTextRect(main_img, "Game Clear!!", [int(self.display_height / 3), int(self.display_width / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
                 cvzone.putTextRect(main_img, f"Your Score: {self.score}", [int(self.display_height / 3), int(self.display_width / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
-                pygame.mixer.music.pause()
-                self.success_audio.play()
-                self.cap.release()
+                self.stage_audio.stop()
+                _play_with_simpleaudio(self.success_audio)
+                cap.release()
                 return main_img
         # Check if Pacman collided with monsters # game over
         if self.red_point[0] - self.red_width // 2 < self.current_point[0] < self.red_point[0] + self.red_width // 2 and self.red_point[1] - self.red_height // 2 < self.current_point[1] < self.red_point[1] + self.red_height // 2 or self.yellow_point[0] - self.wYellow // 2 < self.current_point[0] < self.yellow_point[0] + self.wYellow // 2 and self.yellow_point[1] - self.yellow_height // 2 < self.current_point[1] < self.yellow_point[1] + self.yellow_height // 2 or self.blue_point[0] - self.wBlue // 2 < self.current_point[0] < self.blue_point[0] + self.wBlue // 2 and self.blue_point[1] - self.blue_height // 2 < self.current_point[1] < self.blue_point[1] + self.blue_height // 2:
             cvzone.putTextRect(main_img, "Game Over", [int(self.display_height / 2), int(self.display_width / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
             cvzone.putTextRect(main_img, f"Your Score: {self.score}", [int(self.display_height / 3), int(self.display_width / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
-            pygame.mixer.music.pause()
-            self.failed_audio.play()
-            self.cap.release()
+            self.stage_audio.stop()
+            _play_with_simpleaudio(self.failed_audio)
+            cap.release()
             return main_img
         if self.points:
             for i, _ in enumerate(self.points):

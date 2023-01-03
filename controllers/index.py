@@ -1,36 +1,37 @@
 from cvzone.HandTrackingModule import HandDetector
+from pydub.playback import _play_with_simpleaudio
+from pydub import AudioSegment
 import numpy as np
 import cvzone
 import cv2
-import vlc
 import random
 import math
 import os
 
 FILE_DIR = os.path.dirname(os.path.abspath(__file__))
-PARENT_DIR = os.path.join(FILE_DIR, os.pardir) 
-STATIC_DIR = os.path.join(PARENT_DIR, 'static')
-IMAGES_DIR = os.path.join(STATIC_DIR, 'images')
-AUDIOS_DIR = os.path.join(STATIC_DIR, 'audios')
+PARENT_DIR = os.path.join(FILE_DIR, os.pardir)
+STATIC_DIR = os.path.join(PARENT_DIR, "static")
+IMAGES_DIR = os.path.join(STATIC_DIR, "images")
+AUDIOS_DIR = os.path.join(STATIC_DIR, "audios")
 
-STAGE_AUDIO = (f"{AUDIOS_DIR}/stage.mp3")
-FAILED_AUDIO = (f"{AUDIOS_DIR}/failed.mp3")
-SUCCESS_AUDIO = (f"{AUDIOS_DIR}/success.mp3")
-EAT_EFFECT = (f"{AUDIOS_DIR}/eat.mp3")
+STAGE_AUDIO = f"{AUDIOS_DIR}/stage.mp3"
+FAILED_AUDIO = f"{AUDIOS_DIR}/failed.mp3"
+SUCCESS_AUDIO = f"{AUDIOS_DIR}/success.mp3"
+EAT_EFFECT = f"{AUDIOS_DIR}/eat.mp3"
 FOOD_IMG = f"{IMAGES_DIR}/cherry.png"
 RED_IMG = f"{IMAGES_DIR}/red.png"
 YELLOW_IMG = f"{IMAGES_DIR}/yellow.png"
 BLUE_IMG = f"{IMAGES_DIR}/blue.png"
 SUCCESS_SCORE = 5
 
+
 class IndexController:
     def __init__(self):
         # Load Audios
-        self.stage_audio = vlc.MediaPlayer(STAGE_AUDIO)
-        self.failed_audio = vlc.MediaPlayer(FAILED_AUDIO)
-        self.success_audio = vlc.MediaPlayer(SUCCESS_AUDIO)
-        self.eat_effect = vlc.MediaPlayer(EAT_EFFECT)
-        self.stage_audio.play()
+        self.stage_audio = _play_with_simpleaudio(AudioSegment.from_file(STAGE_AUDIO))
+        self.failed_audio = AudioSegment.from_file(FAILED_AUDIO)
+        self.success_audio = AudioSegment.from_file(SUCCESS_AUDIO)
+        self.eat_effect = AudioSegment.from_file(EAT_EFFECT)
         # Load Images
         self.food_img = cv2.imread(FOOD_IMG, cv2.IMREAD_UNCHANGED)
         self.red_img = cv2.imread(RED_IMG, cv2.IMREAD_UNCHANGED)
@@ -96,23 +97,22 @@ class IndexController:
         self.points.append([self.current_point[0], self.current_point[1]])
         # Check if Pacman ate the Food # score up
         if self.food_point[0] - self.food_width // 2 < self.current_point[0] < self.food_point[0] + self.food_width // 2 and self.food_point[1] - self.food_height // 2 < self.current_point[1] < self.food_point[1] + self.food_height // 2:
-            self.eat_effect.play()
-            self.eat_effect = vlc.MediaPlayer(EAT_EFFECT)
+            _play_with_simpleaudio(self.eat_effect)
             self.score += 1
             self.random_food_location()
             if self.score == SUCCESS_SCORE:  # game clear
                 cvzone.putTextRect(main_img, "Game Clear!!", [int(self.display_height / 3), int(self.display_width / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
                 cvzone.putTextRect(main_img, f"Your Score: {self.score}", [int(self.display_height / 3), int(self.display_width / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
-                self.stage_audio.pause()
-                self.success_audio.play()
+                self.stage_audio.stop()
+                _play_with_simpleaudio(self.success_audio)
                 cap.release()
                 return main_img
         # Check if Pacman collided with monsters # game over
         if self.red_point[0] - self.red_width // 2 < self.current_point[0] < self.red_point[0] + self.red_width // 2 and self.red_point[1] - self.red_height // 2 < self.current_point[1] < self.red_point[1] + self.red_height // 2 or self.yellow_point[0] - self.wYellow // 2 < self.current_point[0] < self.yellow_point[0] + self.wYellow // 2 and self.yellow_point[1] - self.yellow_height // 2 < self.current_point[1] < self.yellow_point[1] + self.yellow_height // 2 or self.blue_point[0] - self.wBlue // 2 < self.current_point[0] < self.blue_point[0] + self.wBlue // 2 and self.blue_point[1] - self.blue_height // 2 < self.current_point[1] < self.blue_point[1] + self.blue_height // 2:
             cvzone.putTextRect(main_img, "Game Over", [int(self.display_height / 2), int(self.display_width / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
             cvzone.putTextRect(main_img, f"Your Score: {self.score}", [int(self.display_height / 3), int(self.display_width / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
-            self.stage_audio.pause()
-            self.failed_audio.play()
+            self.stage_audio.stop()
+            _play_with_simpleaudio(self.failed_audio)
             cap.release()
             return main_img
         if self.points:
