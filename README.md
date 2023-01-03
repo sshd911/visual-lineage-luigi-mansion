@@ -3,6 +3,10 @@ Easily pacman with computer vision using handtrackig
 
 ## Usage
 
+When a black screen appears, hold your hand in front of the screen. Your index finger will be tracked, and moving your index finger will move Pacman.
+
+## Installation
+
 ```bash
 $ git clone https://github.com/sshd911/visual-lineage-pacman && cd visual-lineage-pacman
 
@@ -21,7 +25,7 @@ $ make run
 - cvzone >= 1.5.0
 - Flask >= 2.2.0
 - numpy >= 1.2.0
-- pygame >= 2.0.0
+- pydub >= 0.25.0
 - opencv-python >= 4.7.0
 - opencv_contrib_python >= 4.7.0
 - mediapipe
