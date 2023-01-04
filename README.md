@@ -8,33 +8,37 @@ When a black screen appears, hold your hand in front of the screen. Your index f
 ## Installation
 
 ```bash
-$ git clone https://github.com/sshd911/visual-lineage-pacman && cd visual-lineage-pacman
+$ git clone https://github.com/sshd911/visual-lineage-luigi-mansion.git && cd visual-lineage-luigi-mansion
 
 # Desctop
-$ cd _desctop
+$ cd desctop
 $ make install
 $ make run
 
 # Web
+$ cd web
 $ make install
 $ make run
 ```
 
 ## Requirement
 
-- cvzone >= 1.5.0
-- Flask >= 2.2.0
-- numpy >= 1.2.0
-- pydub >= 0.25.0
-- opencv-python >= 4.7.0
-- opencv_contrib_python >= 4.7.0
-- scipy >= 1.10.0
-- mediapipe
+- desktop & web
+  - cvzone >= 1.5.0
+  - numpy >= 1.2.0
+  - pydub >= 0.25.0
+  - opencv-python >= 4.7.0
+  - opencv_contrib_python >= 4.7.0
+  - scipy >= 1.10.0
+  - mediapipe
+- web
+  - Flask >= 2.2.0
 
 ###### MacOS Apple Silicon
 
-- python >= 3.9.0
-- mediapipe-silicon >= 0.8.0
+- desktop & web
+  - python >= 3.9.0
+  - mediapipe-silicon >= 0.8.0
 
 ###### MacOS Intel Tip
 

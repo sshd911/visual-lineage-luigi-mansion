@@ -47,7 +47,7 @@ class IndexController:
         self.yellow_point = random.randint(100, 1000), random.randint(100, 600)
         self.blue_point = random.randint(100, 1000), random.randint(100, 600)
         self.coin_point = random.randint(100, 1000), random.randint(100, 600)
-        self.current_point = random.randint(100, 1000), random.randint(100, 600) # current Luigi's point
+        self.current_point = random.randint(100, 1000), random.randint(100, 600)  # current Luigi's point
         self.red_width, self.red_height, _ = self.red_img.shape
         self.yellow_width, self.yellow_height, _ = self.yellow_img.shape
         self.blue_width, self.blue_height, _ = self.blue_img.shape
