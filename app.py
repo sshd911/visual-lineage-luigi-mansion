@@ -1,5 +1,6 @@
 from flask import Flask, render_template, Response
 from controllers.index import IndexController
+from numba import jit
 
 app = Flask(__name__)
 app.config["DEBUG"] = False

@@ -2,6 +2,7 @@ from cvzone.HandTrackingModule import HandDetector
 from pydub.playback import _play_with_simpleaudio
 from scipy.spatial.distance import euclidean
 from pydub import AudioSegment
+from numba import jit
 import numpy as np
 import cvzone
 import cv2
@@ -10,35 +11,33 @@ import copy
 import math
 import os
 
-FILE_DIR = os.path.dirname(os.path.abspath(__file__))
-PARENT_DIR = os.path.join(FILE_DIR, os.pardir)
-STATIC_DIR = os.path.join(PARENT_DIR, "static")
-IMAGES_DIR = os.path.join(STATIC_DIR, "images")
-AUDIOS_DIR = os.path.join(STATIC_DIR, "audios")
-
-STAGE_AUDIO = f"{AUDIOS_DIR}/stage.mp3"
-FAILED_AUDIO = f"{AUDIOS_DIR}/failed.mp3"
-SUCCESS_AUDIO = f"{AUDIOS_DIR}/success.mp3"
-EAT_EFFECT = f"{AUDIOS_DIR}/eat.mp3"
-FOOD_IMG = f"{IMAGES_DIR}/cherry.png"
-RED_IMG = f"{IMAGES_DIR}/red.png"
-YELLOW_IMG = f"{IMAGES_DIR}/yellow.png"
-BLUE_IMG = f"{IMAGES_DIR}/blue.png"
-SUCCESS_SCORE = 5
-
 
 class IndexController:
+    STATIC_DIR = os.path.join(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir), "static")
+    IMAGES_DIR = os.path.join(STATIC_DIR, "images")
+    AUDIOS_DIR = os.path.join(STATIC_DIR, "audios")
+
+    STAGE_AUDIO = f"{AUDIOS_DIR}/stage.mp3"
+    FAILED_AUDIO = f"{AUDIOS_DIR}/failed.mp3"
+    SUCCESS_AUDIO = f"{AUDIOS_DIR}/success.mp3"
+    EAT_EFFECT = f"{AUDIOS_DIR}/eat.mp3"
+    FOOD_IMG = f"{IMAGES_DIR}/cherry.png"
+    RED_IMG = f"{IMAGES_DIR}/red.png"
+    YELLOW_IMG = f"{IMAGES_DIR}/yellow.png"
+    BLUE_IMG = f"{IMAGES_DIR}/blue.png"
+    SUCCESS_SCORE = 10
+
     def __init__(self):
         # Load Audios
-        self.stage_audio = _play_with_simpleaudio(AudioSegment.from_file(STAGE_AUDIO))
-        self.failed_audio = AudioSegment.from_file(FAILED_AUDIO)
-        self.success_audio = AudioSegment.from_file(SUCCESS_AUDIO)
-        self.eat_effect = AudioSegment.from_file(EAT_EFFECT)
+        self.stage_audio = _play_with_simpleaudio(AudioSegment.from_file(self.STAGE_AUDIO))
+        self.failed_audio = AudioSegment.from_file(self.FAILED_AUDIO)
+        self.success_audio = AudioSegment.from_file(self.SUCCESS_AUDIO)
+        self.eat_effect = AudioSegment.from_file(self.EAT_EFFECT)
         # Load Images
-        self.food_img = cv2.imread(FOOD_IMG, cv2.IMREAD_UNCHANGED)
-        self.red_img = cv2.imread(RED_IMG, cv2.IMREAD_UNCHANGED)
-        self.yellow_img = cv2.imread(YELLOW_IMG, cv2.IMREAD_UNCHANGED)
-        self.blue_img = cv2.imread(BLUE_IMG, cv2.IMREAD_UNCHANGED)
+        self.food_img = cv2.imread(self.FOOD_IMG, cv2.IMREAD_UNCHANGED)
+        self.red_img = cv2.imread(self.RED_IMG, cv2.IMREAD_UNCHANGED)
+        self.yellow_img = cv2.imread(self.YELLOW_IMG, cv2.IMREAD_UNCHANGED)
+        self.blue_img = cv2.imread(self.BLUE_IMG, cv2.IMREAD_UNCHANGED)
         self.red_point = random.randint(100, 1000), random.randint(100, 600)
         self.blue_point = random.randint(100, 1000), random.randint(100, 600)
         self.yellow_point = random.randint(100, 1000), random.randint(100, 600)
@@ -80,32 +79,28 @@ class IndexController:
     def random_food_location(self):  # Cherry placement
         self.food_point = random.randint(100, 1000), random.randint(100, 600)
 
-    def move_monster(self, main_img, img, img_width, img_height, monster_point, i, distance):  # Monster movements
+    def move_monster(self, main_img, img, img_width, img_height, monster_point, i):  # Monster movements
+        distance = euclidean(self.points[i], monster_point)
         points = (int(monster_point[0] + (self.points[i - 1][0] - monster_point[0]) / distance), int(monster_point[1] + (self.points[i - 1][1] - monster_point[1]) / distance))
         main_img = cvzone.overlayPNG(main_img, img, (points[0] - img_width // 2, points[1] - img_height // 2))
         return main_img, points
 
-    def mouth_movement(self, main_img, distance, i):  # Mouth movement of the pacman
+    def mouth_movement(self, main_img, i):  # Mouth movement of the pacman
+        distance = euclidean(self.points[i - 1], self.points[i])
         if distance > 0:
             unit_vector = ((self.points[i - 1][0] - self.points[i][0]) / distance, (self.points[i - 1][1] - self.points[i][1]) / distance)
             start_angle = np.arctan2(unit_vector[1], unit_vector[0]) * 180 / math.pi
             end_angle = start_angle + math.pi * 2 * (5 / 6) * 180 / math.pi
             cv2.ellipse(main_img, self.points[i], (30, 30), 180, start_angle, end_angle, (0, 255, 255), thickness=-1)
 
-    def calculate_distance(self, i, monster_point=False):  # Distance between Monster and Pacman or Distance from past location
-        if monster_point:
-            return euclidean(self.points[i], monster_point)
-        else:
-            return euclidean(self.points[i - 1], self.points[i])
-
     def update(self, main_img, cap):
-        self.points.append([self.current_point[0], self.current_point[1]])
+        self.points[2:3] = np.array([[self.current_point[0], self.current_point[1]]])
         # Check if Pacman ate the Food # score up
         if self.food_point[0] - self.food_width // 2 < self.current_point[0] < self.food_point[0] + self.food_width // 2 and self.food_point[1] - self.food_height // 2 < self.current_point[1] < self.food_point[1] + self.food_height // 2:
             _play_with_simpleaudio(self.eat_effect)
             self.score += 1
             self.random_food_location()
-            if self.score == SUCCESS_SCORE:  # game clear
+            if self.score == self.SUCCESS_SCORE:  # game clear
                 cvzone.putTextRect(main_img, "Game Clear!!", [int(self.display_height / 3), int(self.display_width / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
                 cvzone.putTextRect(main_img, f"Your Score: {self.score}", [int(self.display_height / 3), int(self.display_width / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
                 self.stage_audio.stop()
@@ -122,16 +117,12 @@ class IndexController:
             return main_img
         if self.points:
             for i, _ in enumerate(self.points):
-                self_distance = self.calculate_distance(i)
-                red_distance = self.calculate_distance(i, self.red_point)
-                yellow_distance = self.calculate_distance(i, self.yellow_point)
-                blue_distance = self.calculate_distance(i, self.blue_point)
+                # Draw monsters
+                main_img, self.red_point = self.move_monster(main_img, self.red_img, self.red_width, self.red_height, self.red_point, i)
+                main_img, self.yellow_point = self.move_monster(main_img, self.yellow_img, self.yellow_width, self.yellow_height, self.yellow_point, i)
+                main_img, self.blue_point = self.move_monster(main_img, self.blue_img, self.blue_width, self.blue_height, self.blue_point, i)
             # Draw pacman
-            self.mouth_movement(main_img, self_distance, i)
-            # Draw monsters
-            main_img, self.red_point = self.move_monster(main_img, self.red_img, self.red_width, self.red_height, self.red_point, i, red_distance)
-            main_img, self.yellow_point = self.move_monster(main_img, self.yellow_img, self.yellow_width, self.yellow_height, self.yellow_point, i, yellow_distance)
-            main_img, self.blue_point = self.move_monster(main_img, self.blue_img, self.blue_width, self.blue_height, self.blue_point, i, blue_distance)
+            self.mouth_movement(main_img, i)
         # Draw Food
         main_img = cvzone.overlayPNG(main_img, self.food_img, (self.food_point[0] - self.food_width // 2, self.food_point[1] - self.food_height // 2))
         # Draw score
