@@ -86,7 +86,7 @@ class IndexController:
         return main_img, points
 
     def mouth_movement(self, main_img, distance, i):  # Mouth movement of the pacman
-        if distance > 0:
+        # if distance > 0:
             unit_vector = ((self.points[i - 1][0] - self.points[i][0]) / distance, (self.points[i - 1][1] - self.points[i][1]) / distance)
             start_angle = np.arctan2(unit_vector[1], unit_vector[0]) * 180 / math.pi
             end_angle = start_angle + math.pi * 2 * (5 / 6) * 180 / math.pi
