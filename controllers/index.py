@@ -25,7 +25,8 @@ class IndexController:
     BLUE_IMG = f"{IMAGES_DIR}/boo.png"
     WALK_IMG = f"{IMAGES_DIR}/walk.png"
     STOP_IMG = f"{IMAGES_DIR}/stop.png"
-    SUCCESS_SCORE = 3
+    SUCCESS_SCORE = 10
+    MAGNIFICATION = 1.2
 
     def __init__(self):
         # Load Audios
@@ -41,22 +42,21 @@ class IndexController:
         self.walk_img = cv2.imread(self.WALK_IMG, cv2.IMREAD_UNCHANGED)
         self.stop_img = cv2.imread(self.STOP_IMG, cv2.IMREAD_UNCHANGED)
         # Settings
+        self.detector = HandDetector(detectionCon=0.8, maxHands=1)
         self.red_point = random.randint(100, 1000), random.randint(100, 600)
         self.yellow_point = random.randint(100, 1000), random.randint(100, 600)
         self.blue_point = random.randint(100, 1000), random.randint(100, 600)
         self.coin_point = random.randint(100, 1000), random.randint(100, 600)
-        self.red_height, self.red_width, _ = self.red_img.shape
-        self.yellow_height, self.yellow_width, _ = self.yellow_img.shape
-        self.blue_height, self.blue_width, _ = self.blue_img.shape
-        self.coin_height, self.coin_width, _ = self.coin_img.shape
-        self.luigi_height, self.luigi_width, _ = self.walk_img.shape  # == self.stop_img.shape
-        self.detector = HandDetector(detectionCon=0.8, maxHands=1)
+        self.current_point = random.randint(100, 1000), random.randint(100, 600) # current Luigi's point
+        self.red_width, self.red_height, _ = self.red_img.shape
+        self.yellow_width, self.yellow_height, _ = self.yellow_img.shape
+        self.blue_width, self.blue_height, _ = self.blue_img.shape
+        self.coin_width, self.coin_height, _ = self.coin_img.shape
+        self.luigi_width, self.luigi_height, _ = self.walk_img.shape
         self.points = []  # Luigi's current and previous positions
-        self.current_point = 0, 0  # current Luigi's point
         self.display_height = 0
         self.display_width = 0
         self.score = 0
-        self.map = 0, 0, 0
 
     def index(self):
         cap = cv2.VideoCapture(0)
@@ -73,9 +73,9 @@ class IndexController:
                     map = copy.copy(self.map)
                     if hands:
                         self.current_point = hands[0]["lmList"][8][0:2]
-                        map = self.update(map, cap)
-                        _, buffer = cv2.imencode(".jpg", map)
-                        yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + buffer.tobytes() + b"\r\n")
+                    map = self.update(map, cap)
+                    _, buffer = cv2.imencode(".jpg", map)
+                    yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + buffer.tobytes() + b"\r\n")
 
     def update(self, main_img, cap):
         # Save Luigi's current and previous positions
@@ -84,12 +84,10 @@ class IndexController:
         if (self.red_point[0] - self.red_width // 2 < self.current_point[0] < self.red_point[0] + self.luigi_width // 2) and (self.red_point[1] - self.red_height // 2 < self.current_point[1] < self.red_point[1] + self.luigi_height // 2) or (self.yellow_point[0] - self.yellow_width // 2 < self.current_point[0] < self.yellow_point[0] + self.luigi_width // 2) and (self.yellow_point[1] - self.yellow_height // 2 < self.current_point[1] < self.yellow_point[1] + self.luigi_height // 2) or (self.blue_point[0] - self.blue_width // 2 < self.current_point[0] < self.blue_point[0] + self.luigi_width // 2) and (self.blue_point[1] - self.blue_height // 2 < self.current_point[1] < self.blue_point[1] + self.luigi_height // 2):
             return self.filed(main_img, cap)
         # Check if Luigi got the coin
-        if self.coin_point[0] - self.coin_width // 2 < self.current_point[0] < self.coin_point[0] + self.coin_width // 2 and self.coin_point[1] - self.coin_height // 2 < self.current_point[1] < self.coin_point[1] + self.coin_height // 2:
+        if (self.coin_point[0] - self.coin_width // 2 < self.current_point[0] < self.coin_point[0] + self.coin_width // 2 or self.current_point[0] - self.luigi_width // 2 < self.coin_point[0] < self.current_point[0] + self.luigi_width // 2) and (self.coin_point[1] - self.coin_height // 2 < self.current_point[1] < self.coin_point[1] + self.coin_height // 2 or self.current_point[1] - self.luigi_height // 2 < self.coin_point[1] < self.current_point[1] + self.luigi_height // 2):
             # Check if score has reached the success score
-            if self.score_up(main_img) == self.SUCCESS_SCORE:
+            if self.score_up() == self.SUCCESS_SCORE:
                 return self.success(main_img, cap)
-        # Draw score
-        main_img = self.draw_score(main_img)
         for i, _ in enumerate(self.points):
             if i > 0:
                 # Draw Boo
@@ -98,7 +96,7 @@ class IndexController:
                 main_img, self.blue_point = self.boo_animation(main_img, self.blue_img, self.blue_point, self.blue_width, self.blue_height, i)
                 # Draw Luigi
                 main_img = self.luigi_animation(main_img, i)
-        return main_img
+        return self.draws(main_img)
 
     def boo_animation(self, main_img, img, boo_point, img_width, img_height, i):
         if 0 < boo_point[0] - img_width // 2 and boo_point[0] + img_width // 2 < self.display_width and 0 < boo_point[1] - img_height // 2 and boo_point[1] + img_height // 2 < self.display_height:
@@ -117,20 +115,19 @@ class IndexController:
         return main_img
 
     def level_up(self):
-        self.walk_img = cv2.resize(self.walk_img, (self.walk_img.shape[1] * 2, self.walk_img.shape[0] * 2))
-        self.stop_img = cv2.resize(self.stop_img, (self.stop_img.shape[1] * 2, self.stop_img.shape[0] * 2))
+        self.walk_img = cv2.resize(self.walk_img, (int(self.walk_img.shape[1] * self.MAGNIFICATION), int(self.walk_img.shape[0] * self.MAGNIFICATION)))
+        self.stop_img = cv2.resize(self.stop_img, (int(self.stop_img.shape[1] * self.MAGNIFICATION), int(self.stop_img.shape[0] * self.MAGNIFICATION)))
 
-    def score_up(self, main_img):
-        self.score += 1
-        cvzone.putTextRect(main_img, f"Score: {self.score}", [50, 80], scale=3, thickness=3, offset=10, colorR=(0, 0, 0), colorT=(0, 0, 255))
+    def score_up(self):
         _play_with_simpleaudio(self.coin_effect)
         self.coin_point = random.randint(10, 1000), random.randint(10, 600)
+        self.score += 1
         self.level_up()
         return self.score
 
-    def draw_score(self, main_img):
-        main_img = cvzone.overlayPNG(main_img, self.coin_img, (self.coin_point[0] - self.coin_width // 2, self.coin_point[1] - self.coin_height // 2))
-        return main_img
+    def draws(self, main_img):
+        cvzone.putTextRect(main_img, f"Score: {self.score}/{self.SUCCESS_SCORE}", [50, 80], scale=3, thickness=3, offset=10, colorR=(0, 0, 0), colorT=(0, 0, 255))
+        return cvzone.overlayPNG(main_img, self.coin_img, (self.coin_point[0] - self.coin_width // 2, self.coin_point[1] - self.coin_height // 2))
 
     def success(self, main_img, cap):
         cvzone.putTextRect(main_img, "Game Clear!!", [int(self.display_height / 3), int(self.display_width / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
