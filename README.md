@@ -1,9 +1,9 @@
-<h1 align='center'>Visual Lineage - Pacman</h1>
-Easily pacman with computer vision using handtrackig
+<h1 align='center'>Visual Lineage - Luigi Mansion</h1>
+Easily Luigi Mansion with computer vision using handtrackig
 
 ## Usage
 
-When a black screen appears, hold your hand in front of the screen. Your index finger will be tracked, and moving your index finger will move Pacman.
+When a black screen appears, hold your hand in front of the screen. Your index finger will be tracked, and moving your index finger will move Luigi.
 
 ## Installation
 
