@@ -2,7 +2,6 @@ from cvzone.HandTrackingModule import HandDetector
 from pydub.playback import _play_with_simpleaudio
 from scipy.spatial.distance import euclidean
 from pydub import AudioSegment
-from numba import jit
 import numpy as np
 import cvzone
 import cv2
@@ -55,7 +54,6 @@ class IndexController:
         self.score = 0
         self.map = 0, 0, 0
 
-    # @jit
     def index(self):
         cap = cv2.VideoCapture(0)
         self.display_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))

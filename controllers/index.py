@@ -2,7 +2,6 @@ from cvzone.HandTrackingModule import HandDetector
 from pydub.playback import _play_with_simpleaudio
 from scipy.spatial.distance import euclidean
 from pydub import AudioSegment
-from numba import jit
 import numpy as np
 import cvzone
 import cv2
@@ -72,7 +71,7 @@ class IndexController:
                         self.current_point = hands[0]["lmList"][8][0:2]
                         map = self.update(map, cap)
                     _, buffer = cv2.imencode(".jpg", map)
-                    yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + buffer.tobytes() + b"\r\n")
+                    yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + buffer.tobytes() + b"\r\n").type()
 
     def scoreUp(self):
         _play_with_simpleaudio(self.eat_effect)
