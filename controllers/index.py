@@ -41,14 +41,15 @@ class IndexController:
         self.red_point = random.randint(100, 1000), random.randint(100, 600)
         self.blue_point = random.randint(100, 1000), random.randint(100, 600)
         self.yellow_point = random.randint(100, 1000), random.randint(100, 600)
+        self.food_point = random.randint(100, 1000), random.randint(100, 600)
         # Settings
+        self.detector = HandDetector(detectionCon=0.8, maxHands=1)
         self.food_height, self.food_width, _ = self.food_img.shape
         self.red_height, self.red_width, _ = self.red_img.shape
         self.yellow_height, self.yellow_width, _ = self.yellow_img.shape
         self.blue_height, self.blue_width, _ = self.blue_img.shape
         self.points = []  # all points of the pacman
         self.current_point = 0, 0  # current headig point
-        self.food_point = 0, 0
         self.display_height = 0
         self.display_width = 0
         self.score = 0
@@ -60,15 +61,12 @@ class IndexController:
         self.display_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.map = np.zeros((self.display_height, self.display_width, 3), np.uint8)
         if cap.isOpened():
-            self.random_food_location()
-            detector = HandDetector(detectionCon=0.8, maxHands=1)
             while True:
                 success, img = cap.read()
-                img = cv2.flip(img, 1)
                 if not success:
                     break
                 else:
-                    hands, img = detector.findHands(img, flipType=False)
+                    hands, _ = self.detector.findHands(cv2.flip(img, 1), flipType=False)
                     map = copy.copy(self.map)
                     if hands:
                         self.current_point = hands[0]["lmList"][8][0:2]
@@ -76,8 +74,27 @@ class IndexController:
                     _, buffer = cv2.imencode(".jpg", map)
                     yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + buffer.tobytes() + b"\r\n")
 
-    def random_food_location(self):  # Cherry placement
+    def scoreUp(self):
+        _play_with_simpleaudio(self.eat_effect)
         self.food_point = random.randint(100, 1000), random.randint(100, 600)
+        self.score += 1
+        return self.score
+
+    def gameClear(self, main_img, cap):
+        cvzone.putTextRect(main_img, "Game Clear!!", [int(self.display_height / 3), int(self.display_width / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
+        cvzone.putTextRect(main_img, f"Your Score: {self.score}", [int(self.display_height / 3), int(self.display_width / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
+        self.stage_audio.stop()
+        _play_with_simpleaudio(self.success_audio)
+        cap.release()
+        return main_img
+
+    def gameOver(self, main_img, cap):
+        cvzone.putTextRect(main_img, "Game Over", [int(self.display_height / 2), int(self.display_width / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
+        cvzone.putTextRect(main_img, f"Your Score: {self.score}", [int(self.display_height / 3), int(self.display_width / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
+        self.stage_audio.stop()
+        _play_with_simpleaudio(self.failed_audio)
+        cap.release()
+        return main_img
 
     def move_monster(self, main_img, img, img_width, img_height, monster_point, i):  # Monster movements
         distance = euclidean(self.points[i], monster_point)
@@ -94,27 +111,15 @@ class IndexController:
             cv2.ellipse(main_img, self.points[i], (30, 30), 180, start_angle, end_angle, (0, 255, 255), thickness=-1)
 
     def update(self, main_img, cap):
+        # Save Pacman's current and previous positions
         self.points[2:3] = np.array([[self.current_point[0], self.current_point[1]]])
-        # Check if Pacman ate the Food # score up
+        # Check if Pacman ate the Food
         if self.food_point[0] - self.food_width // 2 < self.current_point[0] < self.food_point[0] + self.food_width // 2 and self.food_point[1] - self.food_height // 2 < self.current_point[1] < self.food_point[1] + self.food_height // 2:
-            _play_with_simpleaudio(self.eat_effect)
-            self.score += 1
-            self.random_food_location()
-            if self.score == self.SUCCESS_SCORE:  # game clear
-                cvzone.putTextRect(main_img, "Game Clear!!", [int(self.display_height / 3), int(self.display_width / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
-                cvzone.putTextRect(main_img, f"Your Score: {self.score}", [int(self.display_height / 3), int(self.display_width / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
-                self.stage_audio.stop()
-                _play_with_simpleaudio(self.success_audio)
-                cap.release()
-                return main_img
+            if self.scoreUp() == self.SUCCESS_SCORE:
+                return self.gameClear(main_img, cap)
         # Check if Pacman collided with monsters # game over
         if self.red_point[0] - self.red_width // 2 < self.current_point[0] < self.red_point[0] + self.red_width // 2 and self.red_point[1] - self.red_height // 2 < self.current_point[1] < self.red_point[1] + self.red_height // 2 or self.yellow_point[0] - self.yellow_width // 2 < self.current_point[0] < self.yellow_point[0] + self.yellow_width // 2 and self.yellow_point[1] - self.yellow_height // 2 < self.current_point[1] < self.yellow_point[1] + self.yellow_height // 2 or self.blue_point[0] - self.blue_width // 2 < self.current_point[0] < self.blue_point[0] + self.blue_width // 2 and self.blue_point[1] - self.blue_height // 2 < self.current_point[1] < self.blue_point[1] + self.blue_height // 2:
-            cvzone.putTextRect(main_img, "Game Over", [int(self.display_height / 2), int(self.display_width / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
-            cvzone.putTextRect(main_img, f"Your Score: {self.score}", [int(self.display_height / 3), int(self.display_width / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
-            self.stage_audio.stop()
-            _play_with_simpleaudio(self.failed_audio)
-            cap.release()
-            return main_img
+            return self.gameOver(main_img, cap)
         if self.points:
             for i, _ in enumerate(self.points):
                 # Draw monsters
