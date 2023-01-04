@@ -1,5 +1,5 @@
 from flask import Flask, render_template, Response
-from controllers.index import IndexController
+from web.controllers.index import IndexController
 
 app = Flask(__name__)
 app.config["DEBUG"] = False

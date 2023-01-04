@@ -11,7 +11,7 @@ import os
 
 
 class LuigiMansion:
-    STATIC_DIR = os.path.join(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir), "static")
+    STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
     IMAGES_DIR = os.path.join(STATIC_DIR, "images")
     AUDIOS_DIR = os.path.join(STATIC_DIR, "audios")
 
