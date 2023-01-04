@@ -85,7 +85,7 @@ class IndexController:
         # Check if Luigi got the coin
         if self.coin_point[0] - self.coin_width // 2 < self.current_point[0] < self.coin_point[0] + self.coin_width // 2 and self.coin_point[1] - self.coin_height // 2 < self.current_point[1] < self.coin_point[1] + self.coin_height // 2:
             # Check if score has reached the success score
-            if self.add_score(main_img) == self.SUCCESS_SCORE:
+            if self.level_up(main_img) == self.SUCCESS_SCORE:
                 return self.success(main_img, cap)
         # Draw score
         main_img = self.draw_score(main_img)
@@ -114,7 +114,11 @@ class IndexController:
             main_img = cvzone.overlayPNG(main_img, img, (self.points[i][0] - img.shape[0] // 2, self.points[i][1] - img.shape[1] // 2))
         return main_img
 
-    def add_score(self, main_img):
+    def level_up(self):
+        self.walk_img = cv2.resize(self.walk_img, (self.walk_img.shape[1] * 2, self.walk_img.shape[0] * 2))
+        self.stop_img = cv2.resize(self.stop_img, (self.stop_img.shape[1] * 2, self.stop_img.shape[0] * 2))
+
+    def level_up(self, main_img):
         self.score += 1
         cvzone.putTextRect(main_img, f"Score: {self.score}", [50, 80], scale=3, thickness=3, offset=10, colorR=(0, 0, 0), colorT=(0, 0, 255))
         _play_with_simpleaudio(self.coin_effect)
