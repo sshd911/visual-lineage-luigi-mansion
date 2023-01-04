@@ -1,6 +1,5 @@
 import sys
 import os
-import sys
 
 WEB_DIR = os.path.join(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir), "web")
 sys.path.append(WEB_DIR)
