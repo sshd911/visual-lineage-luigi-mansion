@@ -1,7 +1,7 @@
 from cvzone.HandTrackingModule import HandDetector
 from pydub.playback import _play_with_simpleaudio
+from scipy.spatial.distance import euclidean
 from pydub import AudioSegment
-from numba import jit, prange,vectorize
 import numpy as np
 import cvzone
 import cv2
@@ -12,18 +12,18 @@ import os
 
 FILE_DIR = os.path.dirname(os.path.abspath(__file__))
 PARENT_DIR = os.path.join(FILE_DIR, os.pardir)
-STATIC_DIR = os.path.join(PARENT_DIR, 'static')
-IMAGES_DIR = os.path.join(STATIC_DIR, 'images')
-AUDIOS_DIR = os.path.join(STATIC_DIR, 'audios')
+STATIC_DIR = os.path.join(PARENT_DIR, "static")
+IMAGES_DIR = os.path.join(STATIC_DIR, "images")
+AUDIOS_DIR = os.path.join(STATIC_DIR, "audios")
 
-STAGE_AUDIO = f'{AUDIOS_DIR}/stage.mp3'
-FAILED_AUDIO = f'{AUDIOS_DIR}/failed.mp3'
-SUCCESS_AUDIO = f'{AUDIOS_DIR}/success.mp3'
-EAT_EFFECT = f'{AUDIOS_DIR}/eat.mp3'
-FOOD_IMG = f'{IMAGES_DIR}/cherry.png'
-RED_IMG = f'{IMAGES_DIR}/red.png'
-YELLOW_IMG = f'{IMAGES_DIR}/yellow.png'
-BLUE_IMG = f'{IMAGES_DIR}/blue.png'
+STAGE_AUDIO = f"{AUDIOS_DIR}/stage.mp3"
+FAILED_AUDIO = f"{AUDIOS_DIR}/failed.mp3"
+SUCCESS_AUDIO = f"{AUDIOS_DIR}/success.mp3"
+EAT_EFFECT = f"{AUDIOS_DIR}/eat.mp3"
+FOOD_IMG = f"{IMAGES_DIR}/cherry.png"
+RED_IMG = f"{IMAGES_DIR}/red.png"
+YELLOW_IMG = f"{IMAGES_DIR}/yellow.png"
+BLUE_IMG = f"{IMAGES_DIR}/blue.png"
 SUCCESS_SCORE = 5
 
 
@@ -53,7 +53,7 @@ class IndexController:
         self.display_height = 0
         self.display_width = 0
         self.score = 0
-        self.map = 0,0,0
+        self.map = 0, 0, 0
 
     def index(self):
         cap = cv2.VideoCapture(0)
@@ -72,10 +72,10 @@ class IndexController:
                     hands, img = detector.findHands(img, flipType=False)
                     map = copy.copy(self.map)
                     if hands:
-                        self.current_point = hands[0]['lmList'][8][0:2]
+                        self.current_point = hands[0]["lmList"][8][0:2]
                         map = self.update(map, cap)
-                    _, buffer = cv2.imencode('.jpg', map)
-                    yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+                    _, buffer = cv2.imencode(".jpg", map)
+                    yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + buffer.tobytes() + b"\r\n")
 
     def random_food_location(self):  # Cherry placement
         self.food_point = random.randint(100, 1000), random.randint(100, 600)
@@ -88,15 +88,15 @@ class IndexController:
     def mouth_movement(self, main_img, distance, i):  # Mouth movement of the pacman
         if distance > 0:
             unit_vector = ((self.points[i - 1][0] - self.points[i][0]) / distance, (self.points[i - 1][1] - self.points[i][1]) / distance)
-            start_angle = math.atan2(unit_vector[1], unit_vector[0]) * 180 / math.pi
+            start_angle = np.arctan2(unit_vector[1], unit_vector[0]) * 180 / math.pi
             end_angle = start_angle + math.pi * 2 * (5 / 6) * 180 / math.pi
             cv2.ellipse(main_img, self.points[i], (30, 30), 180, start_angle, end_angle, (0, 255, 255), thickness=-1)
 
     def calculate_distance(self, i, monster_point=False):  # Distance between Monster and Pacman or Distance from past location
         if monster_point:
-            return math.sqrt((self.points[i][0] - monster_point[0]) ** 2 + (self.points[i][1] - monster_point[1]) ** 2)
+            return euclidean(self.points[i], monster_point)
         else:
-            return math.sqrt((self.points[i - 1][0] - self.points[i][0]) ** 2 + (self.points[i - 1][1] - self.points[i][1]) ** 2)
+            return euclidean(self.points[i - 1], self.points[i])
 
     def update(self, main_img, cap):
         self.points.append([self.current_point[0], self.current_point[1]])
@@ -106,16 +106,16 @@ class IndexController:
             self.score += 1
             self.random_food_location()
             if self.score == SUCCESS_SCORE:  # game clear
-                cvzone.putTextRect(main_img, 'Game Clear!!', [int(self.display_height / 3), int(self.display_width / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
-                cvzone.putTextRect(main_img, f'Your Score: {self.score}', [int(self.display_height / 3), int(self.display_width / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
+                cvzone.putTextRect(main_img, "Game Clear!!", [int(self.display_height / 3), int(self.display_width / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
+                cvzone.putTextRect(main_img, f"Your Score: {self.score}", [int(self.display_height / 3), int(self.display_width / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
                 self.stage_audio.stop()
                 _play_with_simpleaudio(self.success_audio)
                 cap.release()
                 return main_img
         # Check if Pacman collided with monsters # game over
         if self.red_point[0] - self.red_width // 2 < self.current_point[0] < self.red_point[0] + self.red_width // 2 and self.red_point[1] - self.red_height // 2 < self.current_point[1] < self.red_point[1] + self.red_height // 2 or self.yellow_point[0] - self.yellow_width // 2 < self.current_point[0] < self.yellow_point[0] + self.yellow_width // 2 and self.yellow_point[1] - self.yellow_height // 2 < self.current_point[1] < self.yellow_point[1] + self.yellow_height // 2 or self.blue_point[0] - self.blue_width // 2 < self.current_point[0] < self.blue_point[0] + self.blue_width // 2 and self.blue_point[1] - self.blue_height // 2 < self.current_point[1] < self.blue_point[1] + self.blue_height // 2:
-            cvzone.putTextRect(main_img, 'Game Over', [int(self.display_height / 2), int(self.display_width / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
-            cvzone.putTextRect(main_img, f'Your Score: {self.score}', [int(self.display_height / 3), int(self.display_width / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
+            cvzone.putTextRect(main_img, "Game Over", [int(self.display_height / 2), int(self.display_width / 4)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
+            cvzone.putTextRect(main_img, f"Your Score: {self.score}", [int(self.display_height / 3), int(self.display_width / 3)], scale=7, thickness=5, offset=20, colorR=(0, 0, 0), colorT=(0, 0, 255))
             self.stage_audio.stop()
             _play_with_simpleaudio(self.failed_audio)
             cap.release()
@@ -126,15 +126,15 @@ class IndexController:
                 red_distance = self.calculate_distance(i, self.red_point)
                 yellow_distance = self.calculate_distance(i, self.yellow_point)
                 blue_distance = self.calculate_distance(i, self.blue_point)
-                # Draw monsters
-                main_img, self.red_point = self.move_monster(main_img, self.red_img, self.red_width, self.red_height, self.red_point, i, red_distance)
-                main_img, self.yellow_point = self.move_monster(main_img, self.yellow_img, self.yellow_width, self.yellow_height, self.yellow_point, i, yellow_distance)
-                main_img, self.blue_point = self.move_monster(main_img, self.blue_img, self.blue_width, self.blue_height, self.blue_point, i, blue_distance)
             # Draw pacman
             self.mouth_movement(main_img, self_distance, i)
+            # Draw monsters
+            main_img, self.red_point = self.move_monster(main_img, self.red_img, self.red_width, self.red_height, self.red_point, i, red_distance)
+            main_img, self.yellow_point = self.move_monster(main_img, self.yellow_img, self.yellow_width, self.yellow_height, self.yellow_point, i, yellow_distance)
+            main_img, self.blue_point = self.move_monster(main_img, self.blue_img, self.blue_width, self.blue_height, self.blue_point, i, blue_distance)
         # Draw Food
         main_img = cvzone.overlayPNG(main_img, self.food_img, (self.food_point[0] - self.food_width // 2, self.food_point[1] - self.food_height // 2))
         # Draw score
-        cvzone.putTextRect(main_img, f'Score: {self.score}', [50, 80], scale=3, thickness=3, offset=10, colorR=(0, 0, 0), colorT=(0, 0, 255))
+        cvzone.putTextRect(main_img, f"Score: {self.score}", [50, 80], scale=3, thickness=3, offset=10, colorR=(0, 0, 0), colorT=(0, 0, 255))
 
         return main_img

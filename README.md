@@ -28,6 +28,7 @@ $ make run
 - pydub >= 0.25.0
 - opencv-python >= 4.7.0
 - opencv_contrib_python >= 4.7.0
+- scipy >= 1.10.0
 - mediapipe
 
 ###### MacOS Apple Silicon
