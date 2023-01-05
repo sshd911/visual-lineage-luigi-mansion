@@ -7,7 +7,7 @@ push:
 # dev commands
 run:
 	open -na 'Google Chrome' http://127.0.0.1:80
-	flask run -h 0.0.0.0 -p 80
+	sudo flask run -h 0.0.0.0 -p 80
 format: 
 	black . --line-length=1000
 	flake8

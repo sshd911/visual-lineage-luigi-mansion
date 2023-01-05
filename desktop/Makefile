@@ -6,7 +6,7 @@ push:
 
 # dev commands
 run:
-	python app.py
+	sudo python app.py
 format: 
 	black . --line-length=1000
 env:
