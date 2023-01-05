@@ -20,8 +20,8 @@ class IndexController:
     SUCCESS_AUDIO = f"{AUDIOS_DIR}/success.mp3"
     COIN_EFFECT = f"{AUDIOS_DIR}/coin.mp3"
     COIN_IMG = f"{IMAGES_DIR}/coin.png"
-    RED_IMG = f"{IMAGES_DIR}/king_boo.png"
-    YELLOW_IMG = f"{IMAGES_DIR}/boo.png"
+    king_boo_IMG = f"{IMAGES_DIR}/king_boo.png"
+    BOO_IMG = f"{IMAGES_DIR}/boo.png"
     BLUE_IMG = f"{IMAGES_DIR}/boo.png"
     WALK_IMG = f"{IMAGES_DIR}/walk.png"
     STOP_IMG = f"{IMAGES_DIR}/stop.png"
@@ -36,20 +36,20 @@ class IndexController:
         self.coin_effect = AudioSegment.from_file(self.COIN_EFFECT)
         # Load Images
         self.coin_img = cv2.imread(self.COIN_IMG, cv2.IMREAD_UNCHANGED)
-        self.red_img = cv2.imread(self.RED_IMG, cv2.IMREAD_UNCHANGED)
-        self.yellow_img = cv2.imread(self.YELLOW_IMG, cv2.IMREAD_UNCHANGED)
+        self.king_boo_img = cv2.imread(self.king_boo_IMG, cv2.IMREAD_UNCHANGED)
+        self.boo_img = cv2.imread(self.BOO_IMG, cv2.IMREAD_UNCHANGED)
         self.blue_img = cv2.imread(self.BLUE_IMG, cv2.IMREAD_UNCHANGED)
         self.walk_img = cv2.imread(self.WALK_IMG, cv2.IMREAD_UNCHANGED)
         self.stop_img = cv2.imread(self.STOP_IMG, cv2.IMREAD_UNCHANGED)
         # Settings
         self.detector = HandDetector(detectionCon=0.8, maxHands=1)
-        self.red_point = random.randint(100, 1000), random.randint(100, 600)
-        self.yellow_point = random.randint(100, 1000), random.randint(100, 600)
+        self.king_boo_point = random.randint(100, 1000), random.randint(100, 600)
+        self.boo_point = random.randint(100, 1000), random.randint(100, 600)
         self.blue_point = random.randint(100, 1000), random.randint(100, 600)
         self.coin_point = random.randint(100, 1000), random.randint(100, 600)
         self.current_point = random.randint(100, 1000), random.randint(100, 600)  # current Luigi's point
-        self.red_width, self.red_height, _ = self.red_img.shape
-        self.yellow_width, self.yellow_height, _ = self.yellow_img.shape
+        self.king_boo_width, self.king_boo_height, _ = self.king_boo_img.shape
+        self.boo_width, self.boo_height, _ = self.boo_img.shape
         self.blue_width, self.blue_height, _ = self.blue_img.shape
         self.coin_width, self.coin_height, _ = self.coin_img.shape
         self.luigi_width, self.luigi_height, _ = self.walk_img.shape
@@ -73,15 +73,18 @@ class IndexController:
                     map = copy.copy(self.map)
                     if hands:
                         self.current_point = hands[0]["lmList"][8][0:2]
+                        # print(np.array([[self.current_point[0], self.current_point[1]]]))
                     map = self.update(map, cap)
                     _, buffer = cv2.imencode(".jpg", map)
                     yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + buffer.tobytes() + b"\r\n")
 
     def update(self, main_img, cap):
         # Save Luigi's current and previous positions
-        self.points[1:2] = np.array([[self.current_point[0], self.current_point[1]]])
+        if len(self.points) == 2:
+            self.points[0] = self.points[1]
+        self.points[1:2] = np.array([self.current_point])
         # Check if Luigi collided with boo
-        if (self.red_point[0] - self.red_width // 2 < self.current_point[0] < self.red_point[0] + self.luigi_width // 2) and (self.red_point[1] - self.red_height // 2 < self.current_point[1] < self.red_point[1] + self.luigi_height // 2) or (self.yellow_point[0] - self.yellow_width // 2 < self.current_point[0] < self.yellow_point[0] + self.luigi_width // 2) and (self.yellow_point[1] - self.yellow_height // 2 < self.current_point[1] < self.yellow_point[1] + self.luigi_height // 2) or (self.blue_point[0] - self.blue_width // 2 < self.current_point[0] < self.blue_point[0] + self.luigi_width // 2) and (self.blue_point[1] - self.blue_height // 2 < self.current_point[1] < self.blue_point[1] + self.luigi_height // 2):
+        if (self.king_boo_point[0] - self.king_boo_width // 2 < self.current_point[0] < self.king_boo_point[0] + self.luigi_width // 2) and (self.king_boo_point[1] - self.king_boo_height // 2 < self.current_point[1] < self.king_boo_point[1] + self.luigi_height // 2) or (self.boo_point[0] - self.boo_width // 2 < self.current_point[0] < self.boo_point[0] + self.luigi_width // 2) and (self.boo_point[1] - self.boo_height // 2 < self.current_point[1] < self.boo_point[1] + self.luigi_height // 2) or (self.blue_point[0] - self.blue_width // 2 < self.current_point[0] < self.blue_point[0] + self.luigi_width // 2) and (self.blue_point[1] - self.blue_height // 2 < self.current_point[1] < self.blue_point[1] + self.luigi_height // 2):
             return self.filed(main_img, cap)
         # Check if Luigi got the coin
         if (self.coin_point[0] - self.coin_width // 2 < self.current_point[0] < self.coin_point[0] + self.coin_width // 2 or self.current_point[0] - self.luigi_width // 2 < self.coin_point[0] < self.current_point[0] + self.luigi_width // 2) and (self.coin_point[1] - self.coin_height // 2 < self.current_point[1] < self.coin_point[1] + self.coin_height // 2 or self.current_point[1] - self.luigi_height // 2 < self.coin_point[1] < self.current_point[1] + self.luigi_height // 2):
@@ -91,8 +94,8 @@ class IndexController:
         for i, _ in enumerate(self.points):
             if i > 0:
                 # Draw Boo
-                main_img, self.red_point = self.boo_animation(main_img, self.red_img, self.red_point, self.red_width, self.red_height, i)
-                main_img, self.yellow_point = self.boo_animation(main_img, self.yellow_img, self.yellow_point, self.yellow_width, self.yellow_height, i)
+                main_img, self.king_boo_point = self.boo_animation(main_img, self.king_boo_img, self.king_boo_point, self.king_boo_width, self.king_boo_height, i)
+                main_img, self.boo_point = self.boo_animation(main_img, self.boo_img, self.boo_point, self.boo_width, self.boo_height, i)
                 main_img, self.blue_point = self.boo_animation(main_img, self.blue_img, self.blue_point, self.blue_width, self.blue_height, i)
                 # Draw Luigi
                 main_img = self.luigi_animation(main_img, i)
@@ -100,9 +103,11 @@ class IndexController:
 
     def boo_animation(self, main_img, img, boo_point, img_width, img_height, i):
         if 0 < boo_point[0] - img_width // 2 and boo_point[0] + img_width // 2 < self.display_width and 0 < boo_point[1] - img_height // 2 and boo_point[1] + img_height // 2 < self.display_height:
-            img = cv2.flip(img, 1) if self.points[i][0] < boo_point[0] else img
+            if self.points[i][0] < boo_point[0]:
+                img = cv2.flip(img, 1) if self.points[i][0] < boo_point[0] else img
             distance = euclidean(self.points[i], boo_point)
-            boo_point = (int(boo_point[0] + (self.points[i - 1][0] - boo_point[0]) / distance), int(boo_point[1] + (self.points[i - 1][1] - boo_point[1]) / distance))
+            if distance > 0:
+                boo_point = (int(boo_point[0] + (self.points[i - 1][0] - boo_point[0]) / distance), int(boo_point[1] + (self.points[i - 1][1] - boo_point[1]) / distance))
             main_img = cvzone.overlayPNG(main_img, img, (boo_point[0] - img_width // 2, boo_point[1] - img_height // 2))
         return main_img, boo_point
 
@@ -110,19 +115,19 @@ class IndexController:
         img = (self.walk_img, self.stop_img)[random.randint(0, 1)] if self.points[i][0] != self.points[i - 1][0] else self.stop_img
         self.luigi_width, self.luigi_height, _ = img.shape
         if 0 < self.points[i][0] - self.luigi_width // 2 and self.points[i][0] + self.luigi_width // 2 < self.display_width and 0 < self.points[i][1] - self.luigi_height // 2 and self.points[i][1] + self.luigi_height // 2 < self.display_height:
-            img = cv2.flip(img, 1) if self.points[i][0] > min([self.red_point[0], self.yellow_point[0], self.blue_point[0]]) else img
+            if self.points[i][0] > min([self.king_boo_point[0], self.boo_point[0], self.blue_point[0]]):
+                img = cv2.flip(img, 1)
             main_img = cvzone.overlayPNG(main_img, img, (self.points[i][0] - self.luigi_width // 2, self.points[i][1] - self.luigi_height // 2))
+        # else:
+            # main_img = cvzone.overlayPNG(main_img, img, (self.points[i-1][0] - self.luigi_width // 2, self.points[i-1][1] - self.luigi_height // 2))
         return main_img
 
-    def level_up(self):
+    def score_up(self):
+        self.score += 1
+        _play_with_simpleaudio(self.coin_effect)
+        self.coin_point = random.randint(0 + self.coin_width // 2, self.display_width - self.coin_width // 2), random.randint(0 + self.coin_height // 2, self.display_height - self.coin_height // 2)
         self.walk_img = cv2.resize(self.walk_img, (int(self.walk_img.shape[1] * self.MAGNIFICATION), int(self.walk_img.shape[0] * self.MAGNIFICATION)))
         self.stop_img = cv2.resize(self.stop_img, (int(self.stop_img.shape[1] * self.MAGNIFICATION), int(self.stop_img.shape[0] * self.MAGNIFICATION)))
-
-    def score_up(self):
-        _play_with_simpleaudio(self.coin_effect)
-        self.coin_point = random.randint(10, 1000), random.randint(10, 600)
-        self.score += 1
-        self.level_up()
         return self.score
 
     def draws(self, main_img):
