@@ -1,10 +1,6 @@
-# https://github.com/sshd911/visual-lineage-pacman
-push:
-	git add .
-	git commit -m 'fix'
-	git push origin HEAD
+#!make
 
-# dev commands
+# Develop Command
 run:
 	sudo python app.py
 format: 
@@ -12,6 +8,6 @@ format:
 env:
 	pipreqs --force 
 
-# installation
+# Installation Commands
 install:
 	pip install -r requirements.txt

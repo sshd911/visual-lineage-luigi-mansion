@@ -1,20 +1,19 @@
-# https://github.com/sshd911/visual-lineage-pacman
-push:
-	git add .
-	git commit -m 'fix'
-	git push origin HEAD
+#!make
 
-# dev commands
+BROWSER='Google Chrome'
+HOST=127.0.0.1
+PORT=80
+
+# Develop Command
 run:
-	open -na 'Google Chrome' http://127.0.0.1:80
-	sudo flask run -h 0.0.0.0 -p 80
+	open -na $(BROWSER) http://${HOST}:${PORT}
+	sudo FLASK_APP=app.py FLASK_DEBUG=1 flask run -h ${HOST} -p ${PORT}
 format: 
 	black . --line-length=1000
 	flake8
 env:
 	pipreqs --force 
 
-# installation
+# Installation Commands
 install:
 	pip install -r requirements.txt
-	FLASK_APP=app.py

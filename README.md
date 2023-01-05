@@ -41,6 +41,7 @@ $ make run
   - opencv-python >= 4.7.0
   - opencv_contrib_python >= 4.7.0
   - scipy >= 1.10.0
+  - keyboard >= 0.13.0
   - mediapipe
 - web
   - Flask >= 2.2.0
