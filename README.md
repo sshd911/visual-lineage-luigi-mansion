@@ -1,9 +1,20 @@
 <h1 align='center'>Visual Lineage - Luigi Mansion</h1>
-Easily Luigi Mansion with computer vision using handtrackig
+
+Easily Luigi Mansion With Computer Vision Using HandTracking
+
+ハンドトラッキングを用いたコンピュータビジョンによる簡易ルイージマンション
 
 ## Usage
 
-When a black screen appears, hold your hand in front of the screen. Your index finger will be tracked, and moving your index finger will move Luigi.
+When the black screen appears, prepare your hand (index finger) as far as the camera can see. 
+The index finger will be tracked and you can move Luigi by moving your index finger.
+By pressing the keyboard, you can change Luigi's viewpoint alternately to the left and right.
+If a KeyboardInterrupt occurs, run the program as an administrator user or check the keyboard access rights.
+
+黒い画面が表示されたら、カメラに映る範囲で手（人差し指）を用意してください。
+人差し指がトラッキングされ、人差し指を動かルイージを動かすことができます。
+キーボードを押すことで、ルイージの視点を左右交互に変更できます。
+KeyboardInterruptが発生した場合は、管理者ユーザーで実行するか、キーボードへのアクセス権を確認してください。
 
 ## Installation
 
